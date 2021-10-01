@@ -1,0 +1,171 @@
+---
+title: "BIODIVERSITY TRENDS IN FAO GLOBAL CAPTURE FISHERIES PRODUCTION STATISTICAL DATA"
+subtitle: "(Draft version)"
+output: 
+  pdf_document:
+    fig_caption: yes
+    highlight: kate
+    number_sections: yes
+    toc: yes
+    toc_depth : 3
+geometry: margin=1.75cm
+fontsize: 11pt
+header-includes:
+    \usepackage{lipsum}
+    \usepackage{placeins}
+    \usepackage{floatrow}
+    \usepackage{caption}
+    \captionsetup{labelfont=normalfont,textfont=bf,justification=raggedright,singlelinecheck=off,labelsep=newline}
+    \floatsetup[figure]{capposition=top}
+    \floatsetup[table]{capposition=top}
+    \pagenumbering{arabic}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(results='asis', echo=FALSE,comment=FALSE,warning=FALSE,message=FALSE)
+knitr::knit_hooks$set(plot = function (x, options) {
+  float_correct <- function(f, y, opts)  {
+    if (is.null(opts$regfloat) || opts$regfloat==FALSE)
+      paste0(f(y, opts), "\n\n\\FloatBarrier\n")
+    else
+      f(y, opts)
+  }
+  if (!is.null(options$out.width) || !is.null(options$out.height) ||
+      !is.null(options$out.extra) || options$fig.align != "default" ||
+      !is.null(options$fig.subcap)) {
+    if (is.null(options$fig.scap))
+      options$fig.scap = NA
+    return(float_correct(knitr:::hook_plot_tex, x, options))
+  }
+  return(float_correct(knitr:::hook_plot_md_base, x, options))
+})
+
+```
+
+\newpage
+\listoffigures
+
+\listoftables
+\newpage
+
+# Introduction
+
+`r content$text$intro_text`
+  
+\newpage
+
+# Part 1: Reviewing the commonness of species reported in FAO Global
+
+## Commonness of Taxonomic Group records in FishStatJ
+
+```{r, com_isscaap_global,fig.cap="\\label{fig:com_isscaap_global}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_isscaap_global)
+
+```
+
+`r content$text$com_isscaap_global`
+
+\newpage
+
+## Commonness of Marine and anadromous vs Inland records in FishStatJ  
+
+```{r, com_isscaap_area_type,fig.cap="\\label{fig:com_isscaap_area_type}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_isscaap_area_type)
+
+```
+
+`r content$text$com_isscaap_area_type`
+
+\newpage
+
+##  Commonness of Taxonomic Group records in FishStatJ — by Ocean Basin
+
+```{r,com_isscaap_ocean ,fig.cap="\\label{fig:com_isscaap_ocean}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_isscaap_ocean)
+
+```
+
+`r content$text$com_isscaap_ocean`
+
+\newpage
+
+##  Commonness of Taxonomic Group records in FishStatJ — by FAO Fishery Areas
+
+### Inland
+
+```{r,com_isccap_f_area_inland ,fig.cap="\\label{fig:com_isccap_f_area_inland}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_isccap_f_area_inland)
+
+```
+
+`r content$text$com_isccap_f_area_inland`
+
+\newpage
+
+### Marine  
+
+```{r,com_isccap_f_area_marine ,fig.cap="\\label{fig:com_isccap_f_area_marine}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_isccap_f_area_marine)
+
+```
+
+`r content$text$com_isccap_f_area_marine`
+
+\newpage
+
+# Part 2 Biodiversity reporting development in FAO Fisheries
+
+##  Commonness among Pisces [vertebrate fish] records in FishStatJ — Global
+
+```{r, com_sp_global,fig.cap="\\label{fig:com_sp_global}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_sp_global)
+
+```
+
+`r content$text$com_sp_global`
+
+\newpage
+
+##  Commonness among fish records in FishStatJ — by Ocean Basins
+
+```{r,com_sp_ocean ,fig.cap="\\label{fig:com_sp_ocean}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_sp_ocean)
+
+```
+
+`r content$text$com_sp_ocean`
+
+\newpage
+
+##  Commonness among fish records in FishStatJ — By FAO Fisheries Areas
+
+### Inland
+
+```{r,com_sp_f_area_inland ,fig.cap="\\label{fig:com_sp_f_area_inland}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_sp_f_area_inland)
+
+```
+
+`r content$text$com_sp_f_area_inland`
+
+\newpage
+
+### Marine
+
+```{r,com_sp_f_area_marine ,fig.cap="\\label{fig:com_sp_f_area_marine}Figure title", out.width = '100%'}
+
+knitr::include_graphics(content$fig$com_sp_f_area_marine)
+
+```
+
+`r content$text$com_sp_f_area_marine`
+
+\newpage
