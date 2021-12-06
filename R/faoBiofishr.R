@@ -9,6 +9,8 @@
 #' @import reshape2
 #' @import kableExtra
 #' @import tidyr
+#' @import zoo
+#' @import vegan
 #' @import glue
 #' @import knitr
 #' @import shinyWidgets

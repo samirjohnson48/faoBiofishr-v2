@@ -50,11 +50,44 @@ knitr::knit_hooks$set(plot = function (x, options) {
 
 # Introduction
 
+## Introduction
+
 `r content$text$intro_text`
+
+## Method and approach
+
+The combined Global Capture Production dataset contains more than 1 million records. This big data analysis looks at trends across larger areas and timeframes. It does not look at outliers or rare species but captures the trends by looking at common taxa. FAO statistical data are not collated for biodiversity studies, and we caution against comparing with other reporting frameworks. 
+
+**Software**
+The analyses used in this report can be generated using R codes. The reader can download them on [faoBiofishr](https://github.com/abennici/faoBiofishr)
+
+**Data collection**
+[Briefly explain how the data in Global Production dataset are collected]
+
+**Data access and preparation**
+The pre-processed data used in this circular can be downloaded as a csv file from FAO website Global Capture Production, and used in the R codes mentioned in the software sections. The pre-processing was done to facilitate the analytical steps. 
+
+Following steps were taken to filter the data:
+
+* excluded group “Mammalia” and “Amphibia, Reptilia”
+* excluded values which are data either unavailable or equal to zero
+
+Mammals, amphibians, and reptiles are not relevant because their records in this dataset cannot effectively reflect the impact fishing activities on aquatic environment. 
+… and — are not available or unobtainable values. 0 means more than 0 but less than half of the unite and thus was kept. We do not expect the exclusion of these items to have a considerable impact on the overall findings.  A record in the dataset is a unique combination of reported species, reporting country, year, and fishing area. Results of this report are based on calculating the number of records.
+
+## Key findings
+
+Add key findings
   
 \newpage
 
 # Part 1: Reviewing the commonness of species reported in FAO Global
+
+## Global Map
+
+Place Holder to Map
+
+\newpage
 
 ## Commonness of Taxonomic Group records in FishStatJ
 
@@ -80,7 +113,7 @@ knitr::include_graphics(content$fig$com_isscaap_area_type)
 
 \newpage
 
-##  Commonness of Taxonomic Group records in FishStatJ — by Ocean Basin
+`r paste0("## ",content$title$com_isscaap_ocean)`
 
 ```{r,com_isscaap_ocean ,fig.cap="\\label{fig:com_isscaap_ocean}Figure title", out.width = '100%'}
 
@@ -169,3 +202,9 @@ knitr::include_graphics(content$fig$com_sp_f_area_marine)
 `r content$text$com_sp_f_area_marine`
 
 \newpage
+
+# Discussion
+
+\newpage
+
+# Appendices

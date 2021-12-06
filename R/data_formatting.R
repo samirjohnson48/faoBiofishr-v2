@@ -14,21 +14,26 @@ fao<-read.csv(file)
 #Validate format of dataset
 #TODO
 
-#Convert wide table to long table
-fao_v <- fao[,!sapply(colnames(fao), startsWith, "S")]
-colnames(fao_v)[1:4] <- c("flag", "species", "f_area", "unit")
-tmp<-colnames(fao_v)
-fao_v <- melt(fao_v, id=c("flag", "species", "f_area", "unit"),value.name="capture",variable.name = "year")
-fao_v$year <- gsub('\\D','',fao_v$year)
-fao_s <- fao[,!sapply(colnames(fao), startsWith, "X")]
-colnames(fao_s)<- tmp
-fao_s <- melt(fao_s, id=c("flag", "species", "f_area", "unit"),value.name="info",variable.name = "year")
-fao_s$year <- gsub('\\D','',fao_s$year)
-fao_n <- merge(fao_v,fao_s)
-fao_n <- fao_n[!is.na(fao_n$flag),]
-fao_n <- fao_n[fao_n$flag!="",]
-fao_n <- fao_n[!is.na(fao_n$species),]
-fao_n <- fao_n[fao_n$species!="",]
+# #Convert wide table to long table
+# fao_v <- fao[,!sapply(colnames(fao), startsWith, "S")]
+# colnames(fao_v)[1:4] <- c("flag", "species", "f_area", "unit")
+# tmp<-colnames(fao_v)
+# fao_v <- melt(fao_v, id=c("flag", "species", "f_area", "unit"),value.name="capture",variable.name = "year")
+# fao_v$year <- gsub('\\D','',fao_v$year)
+# fao_s <- fao[,!sapply(colnames(fao), startsWith, "X")]
+# colnames(fao_s)<- tmp
+# fao_s <- melt(fao_s, id=c("flag", "species", "f_area", "unit"),value.name="info",variable.name = "year")
+# fao_s$year <- gsub('\\D','',fao_s$year)
+# fao_n <- merge(fao_v,fao_s)
+# fao_n <- fao_n[!is.na(fao_n$flag),]
+# fao_n <- fao_n[fao_n$flag!="",]
+# fao_n <- fao_n[!is.na(fao_n$species),]
+# fao_n <- fao_n[fao_n$species!="",]
+
+fao_n<-read.csv(file)
+fao_n<-fao_n[,-4]
+
+names(fao_n)<-c("flag","species","f_area","year","capture","info")
 
 #Be sure to keep 2 character length format to area code
 fao_n$f_area<-sprintf("%02d", as.numeric(fao_n$f_area))
@@ -42,8 +47,10 @@ gr<-subset(gr,select=c('3A_Code','Taxonomic_Code','Name_En','Major_Group_En','IS
 names(gr)<-c('species','Taxonomic_Code','Name_En','Major_Group_En','ISSCAAP_Group_En')
 
 data<-merge(fao_n,gr,all.x = T,all.y=F)
+data$Major_Group_En <- ifelse(data$Major_Group_En=="INVERTEBRATA AQUATICA","OTHER INVERTEBRATES",data$Major_Group_En)
+
 data$Major_Group_En<-factor(data$Major_Group_En,
-                            levels = c("PISCES", "MOLLUSCA", "CRUSTACEA", "INVERTEBRATA AQUATICA","PLANTAE AQUATICAE","AMPHIBIA, REPTILIA","MAMMALIA"))
+                            levels = c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE","AMPHIBIA, REPTILIA","MAMMALIA"))
 
 #Species register
 sp<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/CL_FI_SPECIES_ITEM.csv", col_names = T)
@@ -66,11 +73,13 @@ names(ar)<-c('f_area','f_area_name')
 
 data<-merge(data,ar,all.x = T,all.y=F)
 data$f_area_label<-paste0(data$f_area_name," [",data$f_area,"]")
+
 #Data filter
 data <- data %>%
   filter(!Major_Group_En %in% c("AMPHIBIA, REPTILIA","MAMMALIA")) %>% #Exclude of analysis ISSCAAP groups: Amphibia, reptilia and mammalia
-  filter(!(capture == 0 & info == "")) #Exclude real zero capture (considering as record each other cases)
+  filter(capture != 0|(capture ==0)& info =="N")
 
 data$Major_Group_En<-factor(data$Major_Group_En)
+
 return(data)
 }

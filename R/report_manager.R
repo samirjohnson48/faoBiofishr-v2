@@ -11,7 +11,7 @@
 report_manager<- function(file,out=NULL,shiny.preview=FALSE,format="pdf"){
   content<-report_content(file=file,out=out)
   if(shiny.preview==FALSE){
-    report_execute(content=content,format=format)
+    #report_execute(content=content,format=format)
   }else{
     report_shiny(content=content)
   }
