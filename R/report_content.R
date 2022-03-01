@@ -35,22 +35,22 @@ report_content<-function(file,out=NULL){
 
   #Graphical rules
   ## ISSCAAP Group colors
-  ISSCAAPColors <- as.character(c("PISCES"="#AED6F1",
-                                  "MOLLUSCA"="#D7BDE2",
-                                  "CRUSTACEA"="#F5B7B1",
-                                  "OTHER INVERTEBRATES"="#F9E79F",
-                                  "PLANTAE AQUATICAE"="#ABEBC6"))
+  ISSCAAPColors <- as.character(c("Fishes"="#AED6F1",
+                                  "Molluscs"="#D7BDE2",
+                                  "Crustaceans"="#F5B7B1",
+                                  "Aquatic Invertebrates"="#F9E79F",
+                                  "Aquatic Plants"="#ABEBC6"))
   ISSCAAPScale <- scale_fill_manual(name="Major_Group_En", values=ISSCAAPColors)
 
-  GroupColors <- as.character(c("PISCES"="#AED6F1",
-                                  "MOLLUSCA"="#D7BDE2",
-                                  "CRUSTACEA"="#F5B7B1",
-                                  "OTHER INVERTEBRATES"="#F9E79F",
-                                  "PLANTAE AQUATICAE"="#ABEBC6"))
+  GroupColors <- as.character(c("Fishes"="#AED6F1",
+                                  "Molluscs"="#D7BDE2",
+                                  "Crustaceans"="#F5B7B1",
+                                  "Aquatic Invertebrates"="#F9E79F",
+                                  "Aquatic Plants"="#ABEBC6"))
   GroupScale <- scale_fill_manual(name="Major_Group_En", values=ISSCAAPColors)
 
    myColors <- scales::hue_pal()(17)
-   names(myColors) <- levels(as.factor(unique(data%>%filter(Major_Group_En=="PISCES")%>%pull(ISSCAAP_Group_En))))
+   names(myColors) <- levels(as.factor(unique(data%>%filter(Major_Group_En=="Fishes")%>%pull(ISSCAAP_Group_En))))
    colScale <- scale_fill_manual(name = "ISSCAAP_Group_En",values = myColors)
 
   ## Taxonomic line type
@@ -61,7 +61,8 @@ report_content<-function(file,out=NULL){
 
   TaxonomicColors <- as.character(c("species"="#516091",
                                   "family"="#74bec1",
-                                  "nei"="#adebbe"))
+                                 # "nei"="#adebbe")
+                                    "nei"="#ff4d4d"))
   TaxonomicScale <- scale_color_manual(name="level", values=TaxonomicColors)
 
   #generic indicator
@@ -80,6 +81,21 @@ report_content<-function(file,out=NULL){
   Current version of the Global Capture Production Dataset contains the volume of aquatic species caught from {period_start} to {period_end} by country or territory of capture, by species items, by FAO major fishing areas, and year, for all commercial, industrial, recreational and subsistence purposes. It provides a unique and complete record of countries’ efforts to report on species of importance to the management of their natural living resources.
 
   The dataset can be used to highlight geographic and taxonomic biases and gaps in global reporting. The report contains analyses of reported species by geographic areas (continents and FAO areas), and aggregated taxonomic groups found in ISSCAAP, [reference to ASIFS and ISSCAAP]. The dataset has also significantly evolved over time, providing opportunities to investigate the time series in countries’ reporting to FAO Fisheries and Aquaculture Division.")
+
+
+  #Indicators
+
+  start_date_country <- data %>%
+    select(c("year","flag","flag_name","flag_iso")) %>%
+    distinct() %>%
+    mutate(flag=sprintf("%s[%s]",flag_name,flag_iso))%>%
+    group_by(flag)%>%
+    summarise(year = first(year)) %>%
+    group_by(year)%>%
+    summarise(flag = paste0(flag,collapse = ";"))
+
+  tab_name<-"flag_list_by_start_year.csv"
+  write.csv(start_date_country,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
 
   # Part 1
 
@@ -102,7 +118,6 @@ report_content<-function(file,out=NULL){
 
     com_global%>%
     select(c("Major_Group_En","n","pour"))%>%
-    mutate(Major_Group_En = paste0(substr(Major_Group_En,1,1),tolower(substr(Major_Group_En,2,nchar(as.character(Major_Group_En))))))%>%
     mutate(pour = round(pour,1))%>%
     mutate(n = round(n,1))%>%
     kable(format = "html",escape = FALSE,booktabs=T,align = "lcc",
@@ -122,7 +137,6 @@ report_content<-function(file,out=NULL){
     mutate(pour = n/sum*100)%>%
     mutate(n=n/1000)%>%
     select(c("Major_Group_En","n","pour"))%>%
-    mutate(Major_Group_En = paste0(substr(Major_Group_En,1,1),tolower(substr(Major_Group_En,2,nchar(as.character(Major_Group_En))))))%>%
     mutate(pour = round(pour,1))%>%
     mutate(n = round(n,1))%>%
     kable(format = "html",escape = FALSE,booktabs=T,align = "lcc",
@@ -147,7 +161,6 @@ report_content<-function(file,out=NULL){
     mutate(pour = n/sum*100)%>%
     mutate(n=n/1000)%>%
     select(c("Major_Group_En","year","n","pour"))%>%
-    mutate(Major_Group_En = paste0(substr(Major_Group_En,1,1),tolower(substr(Major_Group_En,2,nchar(as.character(Major_Group_En))))))%>%
     mutate(pour = round(pour,1))%>%
     mutate(n = round(n,1))
 
@@ -166,7 +179,7 @@ report_content<-function(file,out=NULL){
   test_table<-rbind(test_table_v,test_table_p)
 
   test_table$Major_Group_En<-factor(test_table$Major_Group_En,
-         levels = c("Pisces", "Mollusca", "Crustacea", "Other invertebrates","Plantae aquaticae"))
+         levels = c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))
 
 
   table<-test_table[order(test_table$Major_Group_En),]
@@ -186,10 +199,10 @@ report_content<-function(file,out=NULL){
 
   fig<-ggplot(data=com_global,aes(x=Major_Group_En,y=n,fill=Major_Group_En))+
     geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
-    labs(x=NULL,y="Number (thousands)",caption=source_text,fill=NULL)+
+    labs(x=NULL,y="Number of records (thousands)",caption=source_text,fill=NULL)+
     geom_text(aes(label=scales::comma(n)), vjust=-0.3, color="grey40", size=9 / .pt)+
     scale_y_continuous(labels = scales::comma)+
-    scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+    scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
     ISSCAAPScale+
     theme(text=element_text(size=9,family = 'sans'),
           axis.title.y = element_text(size=9),
@@ -222,8 +235,8 @@ report_content<-function(file,out=NULL){
   #### Text
   content$text[name]<-list("Text Place Holder")
   content$title[name]<-list("Average number of Unique Records (Species Items) per Country reported 19XX to 201X — by Taxonomic Groups and Ocean Basin")
-  #glue("In FAO the word 'fish' is a term used as a collective term, that includes fish, molluscs, crustaceans and any aquatic animal which is harvested. Definition source: FAO Fisheries and Aquaculture Department, FAO, 2014.
-  #FishStatJ capture production records (**{ min(as.numeric(data$year))}**-**{max(as.numeric(data$year))}** inclusive) contains **{round(subset(com_global,Major_Group_En=='PISCES')$pour,2)}**% vertebrate fish records more than records of molluscs **{round(subset(com_global,Major_Group_En=='MOLLUSCA')$pour,2)}**% and crustaceans **{round(subset(com_global,Major_Group_En=='CRUSTACEA')$pour,2)}**%. Aquatic plants has the least records in capture production dataset **{round(subset(com_global,Major_Group_En=='PLANTAE AQUATICAE')$pour,2)}**%.")
+  #glue("In FAO the word 'fish' is a term used as a collective term, that includes fish, molluscs, Crustaceans and any aquatic animal which is harvested. Definition source: FAO Fisheries and Aquaculture Department, FAO, 2014.
+  #FishStatJ capture production records (**{ min(as.numeric(data$year))}**-**{max(as.numeric(data$year))}** inclusive) contains **{round(subset(com_global,Major_Group_En=='Fishes')$pour,2)}**% vertebrate fish records more than records of molluscs **{round(subset(com_global,Major_Group_En=='Molluscs')$pour,2)}**% and Crustaceans **{round(subset(com_global,Major_Group_En=='Crustaceans')$pour,2)}**%. Aquatic plants has the least records in capture production dataset **{round(subset(com_global,Major_Group_En=='Aquatic Plants')$pour,2)}**%.")
 
 ###################
 #Global by ISSCAAP group
@@ -237,10 +250,10 @@ report_content<-function(file,out=NULL){
 
   fig<-ggplot(data=com_global,aes(x=Major_Group_En,y=n,fill=ISSCAAP_Group_En))+
     geom_bar(stat="identity",position="stack",width = 0.8,show.legend = T)+
-    labs(x=NULL,y="Number (thousands)",caption=source_text,fill=NULL)+
+    labs(x=NULL,y="Number of records (thousands)",caption=source_text,fill=NULL)+
     #geom_text(aes(label=scales::comma(n)), vjust=-0.3, color="grey40", size=9 / .pt)+
     scale_y_continuous(labels = scales::comma)+
-    scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+    scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
     #ISSCAAPScale+
     theme(text=element_text(size=9,family = 'sans'),
           axis.title.y = element_text(size=9),
@@ -291,18 +304,19 @@ report_content<-function(file,out=NULL){
     group_by(Major_Group_En)%>%
     arrange(Major_Group_En,desc(f_area_type))%>%
     mutate(n=n/1000)%>%
+    mutate(pour=(n/sum(n))*100)%>%
     mutate(lab_ypos = ifelse(f_area_type=="marine",-10, cumsum(n)+10))
 
   #### Figure
 
   fig<-ggplot(data=com_area_type,aes(x=Major_Group_En,y=n,fill=f_area_type))+
     geom_bar(stat="identity",position="stack")+
-    geom_text(aes(y=lab_ypos,label=scales::comma(n),colour=f_area_type), size=9 / .pt,show.legend = F)+
+    geom_text(aes(y=lab_ypos,label=sprintf("%s (%s%%)",scales::comma(n),format(round(pour,1), nsmall = 1)),colour=f_area_type), size=9 / .pt,show.legend = F)+
     scale_fill_manual(values=c("#F7DC6F", "#85C1E9"))+
     scale_color_manual(values=c("#C3A606", "#054478"))+
-    labs(x=NULL,y="Number (thousands)",caption=source_text,fill=NULL)+
+    labs(x=NULL,y="Number of records (thousands)",caption=source_text,fill=NULL)+
     scale_y_continuous(labels = scales::comma)+
-    scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+    scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
     theme(text=element_text(size=9,family = 'sans'),
           axis.title.y = element_text(size=9),
           axis.text.y = element_text(size=9),
@@ -397,7 +411,7 @@ report_content<-function(file,out=NULL){
    com_ocean_group_isscaap2<- data %>%
      filter(!is.na(ocean))%>%
      filter(ocean!="Arctic Sea")%>%
-     filter(Major_Group_En=="PISCES")%>%
+     filter(Major_Group_En=="Fishes")%>%
      select(c("ocean","flag","year","ISSCAAP_Group_En","capture","species")) %>%
      group_by(ocean,flag,year,ISSCAAP_Group_En)%>%
      summarise(n=length(unique(species)))%>%
@@ -421,13 +435,13 @@ report_content<-function(file,out=NULL){
    fig<-ggplot(data=com_ocean_group%>%filter(ocean!="Arctic Sea"),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
      geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
      geom_errorbar(aes(ymin=meanOfYear-seOfYear, ymax=meanOfYear+seOfYear), width=.1,color="grey50",position=position_dodge(1))+
-     geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 / .pt)+
+     geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01,suffix =""),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 / .pt)+
      facet_wrap(~ocean,ncol=2)+
      ISSCAAPScale+
-     geom_text(data=com_ocean_group%>%filter(ocean!="Arctic Sea")%>%filter(Major_Group_En=="PISCES"),mapping=aes(x = Inf, y = Inf, label = ocean), hjust=1.05, vjust=1.5, size= 9 / .pt)+
+     geom_label(data=com_ocean_group%>%filter(ocean!="Arctic Sea")%>%filter(Major_Group_En=="Fishes"),mapping=aes(x = Inf, y = Inf, label = ocean), fill="#efeff0", label.size=0.2,hjust=1.05, vjust=1.5, size= 9 / .pt)+
      labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
-     scale_y_continuous(labels = scales::percent, limits=c(0,1),breaks = seq(0, 1, by = 0.25))+
-     scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+     scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits=c(0,1),breaks = seq(0, 1, by = 0.25))+
+     scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
      theme(text=element_text(family = 'sans'),
            axis.title.y = element_text(size=9),
            axis.text.y = element_text(size=9),
@@ -446,8 +460,8 @@ report_content<-function(file,out=NULL){
      geom_bar(stat="identity",position = 'stack',width = 0.8,show.legend = T)+
      labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
      colScale+
-     scale_y_continuous(labels = scales::percent, limits=c(0,1),breaks = seq(0, 1, by = 0.25))+
-     scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+     scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits=c(0,1),breaks = seq(0, 1, by = 0.25))+
+     scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
      theme(text=element_text(family = 'sans'),
            axis.title.y = element_text(size=9),
            axis.text.y = element_text(size=9),
@@ -578,7 +592,7 @@ report_content<-function(file,out=NULL){
   #       geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01)), vjust=-0.3, color="grey40", size=4)+
   #       facet_wrap(~f_area_label,ncol=nb_col)+
   #       ISSCAAPScale+
-  #      geom_text(data=com_area_type%>%filter(f_area!="07")%>%filter(Major_Group_En=="PISCES"),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 5)+
+  #      geom_text(data=com_area_type%>%filter(f_area!="07")%>%filter(Major_Group_En=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 5)+
   #      labs(x=NULL,y="Average number of unique records per country (in percent)",caption="SOURCE : FAO Global Capture Production",fill=NULL)+
   #      scale_y_continuous(labels = scales::percent)+
   #       scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
@@ -620,13 +634,13 @@ report_content<-function(file,out=NULL){
       fig<-ggplot(data=com_area_type%>%filter(f_area!="07"),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
          geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
          geom_errorbar(aes(ymin=meanOfYear-seOfYear, ymax=meanOfYear+seOfYear), width=.1,color="grey50",position=position_dodge(1))+
-         geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 /.pt)+
+         geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01,suffix=""),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 /.pt)+
          facet_wrap(~f_area_label,ncol=2)+
          ISSCAAPScale+
-        geom_text(data=com_area_type%>%filter(f_area!="07")%>%filter(Major_Group_En=="PISCES"),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 9 /.pt)+
+        geom_label(data=com_area_type%>%filter(f_area!="07")%>%filter(Major_Group_En=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), fill="#efeff0", label.size=0.2, hjust=1.05, vjust=1.5, size= 9 /.pt)+
         labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
-        scale_y_continuous(labels = scales::percent, limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
-         scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+        scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
+         scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
          theme(text=element_text(family = 'sans'),
                axis.title.y = element_text(size=9),
                axis.text.y = element_text(size=9),
@@ -647,7 +661,7 @@ report_content<-function(file,out=NULL){
 
        com_area_group2<- data %>%
          filter(f_area!="07")%>%
-         filter(Major_Group_En=="PISCES")%>%
+         filter(Major_Group_En=="Fishes")%>%
          select(c("ocean","f_area_type","f_area","f_area_label","flag","year","ISSCAAP_Group_En","capture","species")) %>%
          group_by(ocean,f_area_type,f_area,f_area_label,flag,year,ISSCAAP_Group_En)%>%
          summarise(n=length(unique(species)))%>%
@@ -667,8 +681,8 @@ report_content<-function(file,out=NULL){
          geom_bar(stat="identity",position='stack',width = 0.8,show.legend = T)+
          labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
          colScale+
-         scale_y_continuous(labels = scales::percent, limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
-         scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+         scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
+         scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
          theme(text=element_text(family = 'sans'),
                axis.title.y = element_text(size=9),
                axis.text.y = element_text(size=9),
@@ -705,13 +719,13 @@ report_content<-function(file,out=NULL){
        fig<-ggplot(data=com_area_type%>%filter(part==i),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
          geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
          geom_errorbar(aes(ymin=meanOfYear-seOfYear, ymax=meanOfYear+seOfYear), width=.1,color="grey50",position=position_dodge(1))+
-         geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 /.pt)+
+         geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01,suffix=""),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 /.pt)+
          facet_wrap(~f_area_label,ncol=2)+
          ISSCAAPScale+
-         geom_text(data=com_area_type%>%filter(part==i)%>%filter(Major_Group_En=="PISCES"),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 9 /.pt)+
+         geom_label(data=com_area_type%>%filter(part==i)%>%filter(Major_Group_En=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), fill="#efeff0", label.size=0.2, hjust=1.05, vjust=1.5, size= 9 /.pt)+
          labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
-         scale_y_continuous(labels = scales::percent, limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
-         scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+         scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
+         scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
          theme(text=element_text(family = 'sans'),
                axis.title.y = element_text(size=9),
                axis.text.y = element_text(size=9),
@@ -739,10 +753,10 @@ report_content<-function(file,out=NULL){
         geom_bar(stat="identity",position='stack',show.legend = TRUE)+
         facet_wrap(~ocean,ncol=1,scales = "free_x")+
         colScale+
-        geom_text(data=com_area_type2,mapping=aes(x = Inf, y = Inf, label = ocean), hjust=1.05, vjust=1.5, size= 9 /.pt)+
+        geom_label(data=com_area_type2,mapping=aes(x = Inf, y = Inf, label = ocean), fill="#efeff0", label.size=0.2, hjust=1.05, vjust=1.5, size= 9 /.pt)+
         labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
-        scale_y_continuous(labels = scales::percent, limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
-        scale_x_discrete(labels = function(x) stringr::str_wrap(paste0(substr(x,1,1),tolower(substr(x,2,nchar(x)))), width = 15))+
+        scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
+        scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
         theme(text=element_text(family = 'sans'),
               axis.title.y = element_text(size=9),
               axis.text.y = element_text(size=9),
@@ -767,13 +781,13 @@ report_content<-function(file,out=NULL){
 
       ###############################################################################################################################
       #Part 2 Biodiversity reporting development in FAO Fisheries
-      ## Commonness among Pisces [vertebrate fish] records in FishStatJ — Global
+      ## Commonness among Fishes [vertebrate fish] records in FishStatJ — Global
       ### Output :com_sp_global
       name<-"com_sp_global"
 
       #### Data
       # com_sp_lvl <- data %>%
-      #   filter(Major_Group_En %in% c("PISCES")) %>%
+      #   filter(Major_Group_En %in% c("Fishes")) %>%
       #   select(c("species","scientific_name","family","order","Taxonomic_Code","year")) %>%
       #   mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
       #   distinct()%>%
@@ -787,7 +801,7 @@ report_content<-function(file,out=NULL){
       #   select(-grp)
 
       com_sp_lvl <- data %>%
-        filter(Major_Group_En %in% c("PISCES")) %>%
+        filter(Major_Group_En %in% c("Fishes")) %>%
         select(c("species","scientific_name","family","order","Taxonomic_Code","year")) %>%
         mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
         distinct()%>%
@@ -829,14 +843,14 @@ report_content<-function(file,out=NULL){
 
 
       fig<-ggplot(data=com_sp_lvl,aes(x=year,group=level))+
-        geom_line(aes(y=pour,color=level),size =1.5,lineend = "round",alpha=0.7)+
-        geom_line(aes(y=nb_sp*(max(pour)/max(nb_sp))),size =1,lineend = "round",color="#c6a67a",linetype="dashed")+
+        geom_line(aes(y=pour,color=level),size =0.5,lineend = "round",alpha=0.7)+
+        geom_line(aes(y=nb_sp*(max(pour)/max(nb_sp))),size =0.5,lineend = "round",color="#c6a67a",linetype="11")+
         #geom_text(data=com_sp_lvl%>%filter(level=='species'),mapping=aes(y =0,label=paste0("n\n",round(nb_sp,0))),lineheight = .7,vjust=0.5, color="#c6a67a",size=8 /.pt)+
         TaxonomicScale+
-        labs(x=NULL,y="Percentage",caption=source_text,color=NULL)+
-        scale_y_continuous(labels = scales::percent,limits=c(0,1),breaks = seq(0, 1, by = 0.25),
-                           sec.axis = sec_axis(~./(max(com_sp_lvl$pour)/max(com_sp_lvl$nb_sp)), name="Number of taxa"))+
-        scale_x_continuous(breaks = seq(min(com_sp_lvl$year),max(com_sp_lvl$year),5))+
+        labs(x=NULL,y="Percentage of specificity categories",caption=source_text,color=NULL)+
+        scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1),breaks = seq(0, 1, by = 0.25),
+                           sec.axis = sec_axis(~./(max(com_sp_lvl$pour)/max(com_sp_lvl$nb_sp)), name="Number of total reported taxa"))+
+        scale_x_continuous(breaks = seq(min(com_sp_lvl$year),max(com_sp_lvl$year),10))+
         theme(text=element_text(family = 'sans'),
               axis.title.y = element_text(size=9),
               axis.text.y = element_text(size=9),
@@ -850,7 +864,7 @@ report_content<-function(file,out=NULL){
               legend.position = "bottom",
               legend.justification = "left",
               legend.direction = "horizontal",
-              panel.background = element_rect(fill="#efeff0"),
+              panel.background = element_rect(fill="transparent"),
               panel.grid.major.y = element_line(linetype="dashed",color="grey50"),
               panel.grid.major.x = element_blank(),
               panel.grid.minor = element_blank(),
@@ -884,7 +898,7 @@ report_content<-function(file,out=NULL){
 
       # com_sp_ocean <- data %>%
       #   filter(f_area_type=="marine") %>%
-      #   filter(Major_Group_En %in% c("PISCES")) %>%
+      #   filter(Major_Group_En %in% c("Fishes")) %>%
       #   select(c("flag","ocean","species","scientific_name","family","order","Taxonomic_Code","year",)) %>%
       #   mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
       #   distinct()%>%
@@ -903,7 +917,7 @@ report_content<-function(file,out=NULL){
 
       com_sp_ocean <- data %>%
         filter(f_area_type=="marine") %>%
-        filter(Major_Group_En %in% c("PISCES")) %>%
+        filter(Major_Group_En %in% c("Fishes")) %>%
         select(c("ocean","species","scientific_name","family","order","Taxonomic_Code","year",)) %>%
         mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
         distinct()%>%
@@ -922,16 +936,16 @@ report_content<-function(file,out=NULL){
       ##### Figure
 
       fig<-ggplot(data=com_sp_ocean,aes(x=year,group=level))+
-        geom_line(aes(y=pour,color=level),size =1.5,lineend = "round",alpha=0.7)+
-        geom_line(aes(y=nb_sp*(max(pour)/max(nb_sp))),size =1,lineend = "round",color="#c6a67a",linetype="dashed")+
+        geom_line(aes(y=pour,color=level),size =0.5,lineend = "round",alpha=0.7)+
+        geom_line(aes(y=nb_sp*(max(pour)/max(nb_sp))),size =0.5,lineend = "round",color="#c6a67a",linetype="11")+
         #geom_text(data=com_sp_ocean%>%filter(ocean!="Arctic Sea")%>%filter(level=='species'),mapping=aes(y =0,label=paste0("n\n",round(nb_sp,0))),lineheight = .7,vjust=0.5, color="#c6a67a",size=8 /.pt)+
         TaxonomicScale+
-        labs(x=NULL,y="Percentage",caption=source_text,color=NULL)+
-        geom_text(data=com_sp_ocean%>%filter(level=="species"),mapping=aes(x = Inf, y = Inf, label = ocean), hjust=1.05, vjust=1.5, size= 9 /.pt)+
+        labs(x=NULL,y="Percentage of specificity categories",caption=source_text,color=NULL)+
+        geom_label(data=com_sp_ocean%>%filter(level=="species"),mapping=aes(x = Inf, y = Inf, label = ocean), fill="white", label.size=0.2, hjust=1.05, vjust=1.5, size= 9 /.pt)+
         facet_wrap(~ocean,ncol=2)+
-        scale_y_continuous(labels = scales::percent,limits=c(0,1),breaks = seq(0, 1, by = 0.25),
-                           sec.axis = sec_axis(~./(max(com_sp_ocean$pour)/max(com_sp_ocean$nb_sp)), name="Number of taxa"))+
-        scale_x_continuous(breaks = seq(min(com_sp_ocean$year),max(com_sp_ocean$year),5))+
+        scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
+                           sec.axis = sec_axis(~./(max(com_sp_ocean$pour)/max(com_sp_ocean$nb_sp)), name="Number of total reported taxa"))+
+        scale_x_continuous(breaks = seq(min(com_sp_ocean$year),max(com_sp_ocean$year),10))+
         theme(text=element_text(family = 'sans'),
               axis.title.y = element_text(size=9),
               axis.text.y = element_text(size=9),
@@ -947,7 +961,7 @@ report_content<-function(file,out=NULL){
               legend.direction = "horizontal",
               strip.background = element_blank(),
               strip.text.x = element_blank(),
-              panel.background = element_rect(fill="#efeff0"),
+              panel.background = element_rect(fill="transparent"),
               panel.grid.major.y = element_line(linetype="dashed",color="grey50"),
               panel.grid.major.x = element_blank(),
               panel.grid.minor = element_blank(),
@@ -982,7 +996,7 @@ report_content<-function(file,out=NULL){
         name<-paste0("com_sp_f_area_inland")
 
         com_sp_area_type <- data %>%
-          filter(Major_Group_En %in% c("PISCES")) %>%
+          filter(Major_Group_En %in% c("Fishes")) %>%
           filter(f_area_type == "inland") %>%
           filter(f_area!="07")%>%
           select(c("f_area_label","species","scientific_name","family","order","Taxonomic_Code","year")) %>%
@@ -1004,16 +1018,16 @@ report_content<-function(file,out=NULL){
         #### Figure
 
         fig<-ggplot(data=com_sp_area_type,aes(x=year,group=level))+
-          geom_line(size =1.5,lineend = "round",aes(color=level,y=pour),alpha=0.7)+
-          geom_line(aes(y=nb_sp*(max(pour)/max(nb_sp))),size =1,lineend = "round",color="#c6a67a",linetype="dashed")+
+          geom_line(size =0.5,lineend = "round",aes(color=level,y=pour),alpha=0.7)+
+          geom_line(aes(y=nb_sp*(max(pour)/max(nb_sp))),size =0.5,lineend = "round",color="#c6a67a",linetype="11")+
           #geom_text(data=com_sp_area_type%>%filter(level=='species'),mapping=aes(y =0,label=paste0("n\n",round(nb_sp,0))),lineheight = .7,vjust=0.5, color="#c6a67a",size=8 /.pt)+
           TaxonomicScale+
-          labs(x=NULL,y="Percentage",caption=source_text,color=NULL)+
-          geom_text(data=com_sp_area_type%>%filter(level=='species'),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 9 /.pt)+
+          labs(x=NULL,y="Percentage of specificity categories",caption=source_text,color=NULL)+
+          geom_label(data=com_sp_area_type%>%filter(level=='species'),mapping=aes(x = Inf, y = Inf, label = f_area_label), fill="white", label.size=0.2, hjust=1.05, vjust=1.5, size= 9 /.pt)+
           facet_wrap(~f_area_label,ncol=2)+
-          scale_y_continuous(labels = scales::percent,limits=c(0,1),breaks = seq(0, 1, by = 0.25),
-                             sec.axis = sec_axis(~./(max(com_sp_area_type$pour)/max(com_sp_area_type$nb_sp)), name="Number of taxa"))+
-          scale_x_continuous(breaks = seq(min(com_sp_area_type$year),max(com_sp_area_type$year),5))+
+          scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
+                             sec.axis = sec_axis(~./(max(com_sp_area_type$pour)/max(com_sp_area_type$nb_sp)), name="Number of total reported taxa"))+
+          scale_x_continuous(breaks = seq(min(com_sp_area_type$year),max(com_sp_area_type$year),10))+
           theme(text=element_text(family = 'sans'),
                 axis.title.y = element_text(size=9),
                 axis.text.y = element_text(size=9),
@@ -1029,7 +1043,7 @@ report_content<-function(file,out=NULL){
                 legend.direction = "horizontal",
                 strip.background = element_blank(),
                 strip.text.x = element_blank(),
-                panel.background = element_rect(fill="#efeff0"),
+                panel.background = element_rect(fill="transparent"),
                 panel.grid.major.y = element_line(linetype="dashed",color="grey50"),
                 panel.grid.major.x = element_blank(),
                 panel.grid.minor = element_blank(),
@@ -1045,7 +1059,7 @@ report_content<-function(file,out=NULL){
         name<-paste0("com_sp_f_area_marine")
 
         com_sp_area_type <- data %>%
-          filter(Major_Group_En %in% c("PISCES")) %>%
+          filter(Major_Group_En %in% c("Fishes")) %>%
           filter(f_area_type == "marine") %>%
           select(c("f_area_label","species","scientific_name","family","order","Taxonomic_Code","year")) %>%
           mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
@@ -1069,16 +1083,17 @@ report_content<-function(file,out=NULL){
           com_sp_area_type_part$level<-factor(com_sp_area_type_part$level,levels = c("species","family","nei"))
 
           fig<-ggplot(data=com_sp_area_type_part,aes(x=year,group=level))+
-            geom_line(size =1.5,lineend = "round",aes(color=level,y=pour),alpha=0.7)+
-            geom_line(aes(y=nb_sp*(max(pour,na.rm=T)/max(nb_sp,na.rm=T))),size =1,lineend = "round",color="#c6a67a",linetype="dashed")+
+            geom_line(size =0.5,lineend = "round",aes(color=level,y=pour),alpha=0.7)+
+            geom_line(aes(y=nb_sp*(max(pour,na.rm=T)/max(nb_sp,na.rm=T))),size =0.5,lineend = "round",color="#c6a67a",linetype="11")+
           #  geom_text(data=com_sp_area_type%>%filter(part==i)%>%filter(level=='species'),mapping=aes(y =0,label=paste0("n\n",round(nb_sp,0))),lineheight = .7,vjust=0.7, color="#c6a67a",size=8 /.pt)+
             TaxonomicScale+
-            labs(x=NULL,y="Percentage",caption=source_text,color=NULL)+
-            geom_text(data=com_sp_area_type_part%>%filter(level=='species'),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 9 /.pt)+
+            labs(x=NULL,y="Percentage of specificity categories",caption=source_text,color=NULL)+
+            #geom_text(data=com_sp_area_type_part%>%filter(level=='species'),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 9 /.pt)+
+            geom_label(data=com_sp_area_type_part%>%filter(level=='species'),mapping=aes(x = Inf, y = Inf, label = f_area_label), fill="white", label.size=0.2, hjust=1.05, vjust=1.5, size= 9 /.pt)+
             facet_wrap(~f_area_label,ncol=2)+
-            scale_y_continuous(labels = scales::percent,limits=c(0,1),breaks = seq(0, 1, by = 0.25),
-                               sec.axis = sec_axis(~./(max(com_sp_area_type_part$pour,na.rm=T)/max(com_sp_area_type_part$nb_sp,na.rm=T)), name="Number of taxa"))+
-            scale_x_continuous(breaks = seq(min(com_sp_area_type_part$year),max(com_sp_area_type_part$year),5))+
+            scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
+                               sec.axis = sec_axis(~./(max(com_sp_area_type_part$pour,na.rm=T)/max(com_sp_area_type_part$nb_sp,na.rm=T)), name="Number of total reported taxa"))+
+            scale_x_continuous(breaks = seq(min(com_sp_area_type_part$year),max(com_sp_area_type_part$year),10))+
             theme(text=element_text(family = 'sans'),
                   axis.title.y = element_text(size=9),
                   axis.text.y = element_text(size=9),
@@ -1094,7 +1109,7 @@ report_content<-function(file,out=NULL){
                   legend.direction = "horizontal",
                   strip.background = element_blank(),
                   strip.text.x = element_blank(),
-                  panel.background = element_rect(fill="#efeff0"),
+                  panel.background = element_rect(fill="transparent"),
                   panel.grid.major.y = element_line(linetype="dashed",color="grey50"),
                   panel.grid.major.x = element_blank(),
                   panel.grid.minor = element_blank(),
@@ -1241,7 +1256,7 @@ report_content<-function(file,out=NULL){
     group_by(ocean,Major_Group_En)%>%
     mutate(value=if(!is.nan(pourc)){paste0(morethan2," [",round(pourc,2),"%]")}else{"_"})%>%
     select(ocean,Major_Group_En,value)%>%
-    arrange(match(Major_Group_En, c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))) %>%
+    arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
     pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
     ungroup()
 
@@ -1276,7 +1291,7 @@ report_content<-function(file,out=NULL){
       filter(f_area_type==i)%>%
       mutate(value=if(!is.nan(pourc)){paste0(morethan2," [",round(pourc,2),"%]")}else{"_"})%>%
       select(f_area_label,Major_Group_En,value)%>%
-      arrange(match(Major_Group_En, c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))) %>%
+      arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
       pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
       ungroup()
 
@@ -1317,7 +1332,7 @@ report_content<-function(file,out=NULL){
     group_by(ocean,Major_Group_En)%>%
     mutate(value=if(!is.nan(pourc)){paste0(unique_nb," [",round(pourc,2),"%]")}else{"_"})%>%
     select(ocean,Major_Group_En,value)%>%
-    arrange(match(Major_Group_En, c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))) %>%
+    arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
     pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
     ungroup()
 
@@ -1354,7 +1369,7 @@ report_content<-function(file,out=NULL){
       filter(f_area_type==i)%>%
       mutate(value=if(!is.nan(pourc)){paste0(unique_nb," [",round(pourc,2),"%]")}else{"_"})%>%
       select(f_area_label,Major_Group_En,value)%>%
-      arrange(match(Major_Group_En, c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))) %>%
+      arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
       pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
       ungroup()
 
@@ -1389,7 +1404,7 @@ report_content<-function(file,out=NULL){
 
    richess_ocean_table<-richess_ocean%>%
      group_by(ocean)%>%
-     arrange(match(Major_Group_En, c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))) %>%
+     arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
      pivot_wider(names_from = Major_Group_En,values_from = simpson)
 
    tab_name<-paste0("ref_",name,".csv")
@@ -1397,7 +1412,7 @@ report_content<-function(file,out=NULL){
 
 
    richess_ocean$Major_Group_En<-factor(richess_ocean$Major_Group_En,
-                                       levels = c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))
+                                       levels = c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))
 
    fig<-ggplot(richess_ocean, aes(Major_Group_En, ocean, fill= simpson)) +
      geom_tile(color = "white",lwd = 1.5,linetype = 1) +
@@ -1439,7 +1454,7 @@ report_content<-function(file,out=NULL){
      ungroup()
 
    richess_area$Major_Group_En<-factor(richess_area$Major_Group_En,
-                                       levels = c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))
+                                       levels = c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))
 
    for(i in unique(richess_area$f_area_type)){
 
@@ -1448,7 +1463,7 @@ report_content<-function(file,out=NULL){
      richess_area_table<-richess_area%>%
        filter(f_area_type==i)%>%
        group_by(f_area_type,f_area,f_area_label)%>%
-       arrange(match(Major_Group_En, c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))) %>%
+       arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
        pivot_wider(names_from = Major_Group_En,values_from = simpson)
 
       print(richess_area_table)
@@ -1515,7 +1530,7 @@ report_content<-function(file,out=NULL){
      ungroup()
 
    turn_ocean_table<-turn_ocean%>%
-     arrange(match(Major_Group_En, c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))) %>%
+     arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
      pivot_wider(names_from = Major_Group_En,values_from = meanOfFlag)
 
    tab_name<-paste0("ref_",name,".csv")
@@ -1554,7 +1569,7 @@ report_content<-function(file,out=NULL){
      turn_area_table<-turn_area%>%
        filter(f_area_type==i)%>%
        group_by(f_area_type,f_area_label)%>%
-     arrange(match(Major_Group_En, c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE"))) %>%
+     arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
      pivot_wider(names_from = Major_Group_En,values_from = meanOfFlag)
 
      print(turn_area_table)

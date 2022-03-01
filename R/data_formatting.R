@@ -9,7 +9,7 @@
 data_formatting = function(file){
 
 #Inport dataset
-fao<-read.csv(file)
+#fao<-read.csv(file)
 
 #Validate format of dataset
 #TODO
@@ -37,6 +37,10 @@ names(fao_n)<-c("flag","species","f_area","year","capture","info")
 
 #Be sure to keep 2 character length format to area code
 fao_n$f_area<-sprintf("%02d", as.numeric(fao_n$f_area))
+
+#Be sure to keep 3 character length format to flag code
+fao_n$flag<-sprintf("%03d", as.numeric(fao_n$flag))
+
 #Keep information about inland/marine area base on
 fao_n$f_area_type <- ifelse(fao_n$f_area%in%c("01","02","03","04","05","06","07"),"inland","marine")
 
@@ -47,10 +51,18 @@ gr<-subset(gr,select=c('3A_Code','Taxonomic_Code','Name_En','Major_Group_En','IS
 names(gr)<-c('species','Taxonomic_Code','Name_En','Major_Group_En','ISSCAAP_Group_En')
 
 data<-merge(fao_n,gr,all.x = T,all.y=F)
-data$Major_Group_En <- ifelse(data$Major_Group_En=="INVERTEBRATA AQUATICA","OTHER INVERTEBRATES",data$Major_Group_En)
+
+data<-subset(data,Major_Group_En %in% c("PISCES","MOLLUSCA","CRUSTACEA","INVERTEBRATA AQUATICA","PLANTAE AQUATICAE")) #Exclude of analysis ISSCAAP groups: Amphibia, reptilia and mammalia
+
+data$Major_Group_En <- ifelse(data$Major_Group_En=="PISCES","Fishes",
+                              ifelse(data$Major_Group_En=="MOLLUSCA","Molluscs",
+                                     ifelse(data$Major_Group_En=="CRUSTACEA","Crustaceans",
+                                            ifelse(data$Major_Group_En=="INVERTEBRATA AQUATICA","Aquatic Invertebrates",
+                                                   ifelse(data$Major_Group_En=="PLANTAE AQUATICAE","Aquatic Plants",
+                              data$Major_Group_En)))))
 
 data$Major_Group_En<-factor(data$Major_Group_En,
-                            levels = c("PISCES", "MOLLUSCA", "CRUSTACEA", "OTHER INVERTEBRATES","PLANTAE AQUATICAE","AMPHIBIA, REPTILIA","MAMMALIA"))
+                            levels = c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))
 
 #Species register
 sp<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/CL_FI_SPECIES_ITEM.csv", col_names = T)
@@ -74,9 +86,15 @@ names(ar)<-c('f_area','f_area_name')
 data<-merge(data,ar,all.x = T,all.y=F)
 data$f_area_label<-paste0(data$f_area_name," [",data$f_area,"]")
 
+#FAO Countries register
+ct<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/country/CL_FI_COUNTRY_ITEM.csv", col_names = T)
+ct<-subset(ct,select=c('UN_Code','Name_En','ISO3_Code'))
+names(ct)<-c('flag','flag_name','flag_iso')
+
+data<-merge(data,ct,all.x = T,all.y=F)
+
 #Data filter
 data <- data %>%
-  filter(!Major_Group_En %in% c("AMPHIBIA, REPTILIA","MAMMALIA")) %>% #Exclude of analysis ISSCAAP groups: Amphibia, reptilia and mammalia
   filter(capture != 0|(capture ==0)& info =="N")
 
 data$Major_Group_En<-factor(data$Major_Group_En)
