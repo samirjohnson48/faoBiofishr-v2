@@ -6,6 +6,7 @@
 #' @import dplyr
 #' @import rmarkdown
 #' @import ggplot2
+#' @import ggtext
 #' @import reshape2
 #' @import kableExtra
 #' @import tidyr

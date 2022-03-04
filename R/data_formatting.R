@@ -64,8 +64,29 @@ data$Major_Group_En <- ifelse(data$Major_Group_En=="PISCES","Fishes",
 data$Major_Group_En<-factor(data$Major_Group_En,
                             levels = c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))
 
+
+
+div<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/CL_FI_SPECIES_ISSCAAP_DIVISION.csv")
+div<-subset(div,select=c('Identifier','Name_En'))
+names(div)<-c('div_id','ISSCAAP_Division_En')
+
+grp<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/CL_FI_SPECIES_ISSCAAP_GROUP.csv")
+grp<-subset(grp,select=c('Identifier','Name_En'))
+names(grp)<-c('grp_id','ISSCAAP_Group_En')
+
+
+div_grp<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/HCL_FI_SPECIES_ISSCAAPDIV_ISSCAAPGRP.csv")
+names(div_grp)<-c('div_id','grp_id')
+
+dg<-merge(div,div_grp,all.x = T,all.y=T)
+dg<-merge(dg,grp,all.x = T,all.y=T)
+dg<-subset(dg,select = c("ISSCAAP_Group_En","ISSCAAP_Division_En"))
+
+data<-merge(data,dg,all.x = T,all.y=F)
+
 #Species register
 sp<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/CL_FI_SPECIES_ITEM.csv", col_names = T)
+
 sp<-subset(sp,select=c('Alpha3_Code','Family_mapping','Order_mapping','Scientific_Name','Name_En'))
 names(sp)<-c('species','family','order','scientific_name','sp_name_En')
 data<-merge(data,sp,all.x = T,all.y=F)
@@ -95,7 +116,13 @@ data<-merge(data,ct,all.x = T,all.y=F)
 
 #Data filter
 data <- data %>%
-  filter(capture != 0|(capture ==0)& info =="N")
+  filter(capture != 0|(capture ==0 & info =="N"))
+
+data <- data%>%
+  filter(!(f_area_type=="marine"&ISSCAAP_Division_En=="Freshwater fishes"))
+
+# data <- data%>%
+#   filter(!(f_area_type=="inland"&ISSCAAP_Division_En=="Marine fishes"))
 
 data$Major_Group_En<-factor(data$Major_Group_En)
 

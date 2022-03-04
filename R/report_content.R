@@ -42,12 +42,78 @@ report_content<-function(file,out=NULL){
                                   "Aquatic Plants"="#ABEBC6"))
   ISSCAAPScale <- scale_fill_manual(name="Major_Group_En", values=ISSCAAPColors)
 
-  GroupColors <- as.character(c("Fishes"="#AED6F1",
-                                  "Molluscs"="#D7BDE2",
-                                  "Crustaceans"="#F5B7B1",
-                                  "Aquatic Invertebrates"="#F9E79F",
-                                  "Aquatic Plants"="#ABEBC6"))
-  GroupScale <- scale_fill_manual(name="Major_Group_En", values=ISSCAAPColors)
+  ISSCAAPGroupLvl <- c("Freshwater fishes",
+                "Carps, barbels and other cyprinids",
+                "Tilapias and other cichlids",
+                "Miscellaneous freshwater fishes",
+
+                "Diadromous fishes",
+                "Sturgeons, paddlefishes",
+                "River eels",
+                "Salmons, trouts, smelts",
+                "Shads",
+                "Miscellaneous diadromous fishes",
+
+                "Marine fishes",
+                "Flounders, halibuts, soles",
+                "Cods, hakes, haddocks",
+                "Miscellaneous coastal fishes",
+                "Miscellaneous demersal fishes",
+                "Herrings, sardines, anchovies",
+                "Tunas, bonitos, billfishes",
+                "Miscellaneous pelagic fishes",
+                "Sharks, rays, chimaeras",
+                "Marine fishes not identified")
+
+
+  SubGrLvl <- c("Freshwater fishes"="white",
+    "Carps, barbels and other cyprinids"="#ffd400",
+    "Tilapias and other cichlids"="#ffb600",
+    "Miscellaneous freshwater fishes"="#ff9e00",
+
+  "Diadromous fishes"="white",
+    "Sturgeons, paddlefishes"="#aacc00",#C1FF1C",
+    "River eels"="#80b918",#9BE931",
+    "Salmons, trouts, smelts"="#55a630",#58BB43",
+    "Shads"="#2b9348",#3AA346",
+    "Miscellaneous diadromous fishes"="#007f5f",#007542",
+
+
+  "Marine fishes"="white",
+    "Flounders, halibuts, soles"="#80ffdb",
+    "Cods, hakes, haddocks"="#72efdd",
+    "Miscellaneous coastal fishes"="#64dfdf",
+    "Miscellaneous demersal fishes"="#56cfe1",
+    "Herrings, sardines, anchovies"="#48bfe3",
+    "Tunas, bonitos, billfishes"="#4ea8de",
+    "Miscellaneous pelagic fishes"="#5390d9",
+    "Sharks, rays, chimaeras"="#5e60ce",
+    "Marine fishes not identified"="#6930c3")
+
+  SubGrlabel <- c("Freshwater fishes"="<br/>**FRESHWATER FISHES**",
+                "Carps, barbels and other cyprinids"="Carps, barbels and other cyprinids",
+                "Tilapias and other cichlids"="Tilapias and other cichlids",
+                "Miscellaneous freshwater fishes"="Miscellaneous freshwater fishes",
+
+                "Diadromous fishes"="<br/>**DIADROMOUS FISHES**",
+                "Sturgeons, paddlefishes"="Sturgeons, paddlefishes",
+                "River eels"="River eels",
+                "Salmons, trouts, smelts"="Salmons, trouts, smelts",
+                "Shads"="Shads",
+                "Miscellaneous diadromous fishes"="Miscellaneous diadromous fishes",
+
+                "Marine fishes"="<br/>**MARINE FISHES**",
+                "Flounders, halibuts, soles"="Flounders, halibuts, soles",
+                "Cods, hakes, haddocks"="Cods, hakes, haddocks",
+                "Miscellaneous coastal fishes"="Miscellaneous coastal fishes",
+                "Miscellaneous demersal fishes"="Miscellaneous demersal fishes",
+                "Herrings, sardines, anchovies"="Herrings, sardines, anchovies",
+                "Tunas, bonitos, billfishes"="Tunas, bonitos, billfishes",
+                "Miscellaneous pelagic fishes"="Miscellaneous pelagic fishes",
+                "Sharks, rays, chimaeras"="Sharks, rays, chimaeras",
+                "Marine fishes not identified"="Marine fishes not identified")
+
+  SubGrScale <- scale_fill_manual(values=SubGrLvl,labels=SubGrlabel)
 
    myColors <- scales::hue_pal()(17)
    names(myColors) <- levels(as.factor(unique(data%>%filter(Major_Group_En=="Fishes")%>%pull(ISSCAAP_Group_En))))
@@ -409,9 +475,10 @@ report_content<-function(file,out=NULL){
      ungroup()
 
    com_ocean_group_isscaap2<- data %>%
-     filter(!is.na(ocean))%>%
-     filter(ocean!="Arctic Sea")%>%
      filter(Major_Group_En=="Fishes")%>%
+     mutate(ISSCAAP_Group_En=factor(ISSCAAP_Group_En,levels = ISSCAAPGroupLvl))%>%
+     filter(!is.na(ocean))%>%
+     #filter(ocean!="Arctic Sea")%>%
      select(c("ocean","flag","year","ISSCAAP_Group_En","capture","species")) %>%
      group_by(ocean,flag,year,ISSCAAP_Group_En)%>%
      summarise(n=length(unique(species)))%>%
@@ -423,6 +490,16 @@ report_content<-function(file,out=NULL){
      mutate(sum=sum(meanOfYear))%>%
      ungroup()%>%
      mutate(pour=meanOfYear/sum)
+
+   add<-com_ocean_group_isscaap2[1,]
+   add$ISSCAAP_Group_En<-"Diadromous fishes"
+   add$pour<-0
+   add2<-add
+   add2$ISSCAAP_Group_En<-"Marine fishes"
+
+   com_ocean_group_isscaap2<-rbind(com_ocean_group_isscaap2,add)
+   com_ocean_group_isscaap2<-rbind(com_ocean_group_isscaap2,add2)
+
 
 
 #######################################################
@@ -459,7 +536,7 @@ report_content<-function(file,out=NULL){
    fig_isscaap2<-ggplot(data=com_ocean_group_isscaap2,aes(x=ocean,y=pour,fill=ISSCAAP_Group_En))+
      geom_bar(stat="identity",position = 'stack',width = 0.8,show.legend = T)+
      labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
-     colScale+
+     SubGrScale+
      scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits=c(0,1),breaks = seq(0, 1, by = 0.25))+
      scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
      theme(text=element_text(family = 'sans'),
@@ -469,7 +546,7 @@ report_content<-function(file,out=NULL){
            legend.key = element_rect(fill = "white"),
            legend.key.size = unit(0.2, 'cm'),
            legend.title = element_blank(),
-           legend.text=element_text(size=7),
+           legend.text=element_markdown(size=7),
            legend.background = element_rect(fill="transparent"),
            strip.background = element_blank(),
            strip.text.x = element_blank(),
@@ -480,9 +557,8 @@ report_content<-function(file,out=NULL){
            plot.caption = element_text(face = "italic",hjust=0,size=9,color="grey20"),
            plot.margin = unit(c(0,0,0,0), "cm"))
 
-   fig_name<-paste0(name,"_subgroup.png")
-   ggsave(fig_name,fig,"png",path=fig_path,dpi=900,width=6.5,height=4)
-   ggsave(fig_name,fig_isscaap2,"png",path=fig_path,dpi=900,width=6.5,height=4)
+   ggsave(paste0(name,".png"),fig,"png",path=fig_path,dpi=900,width=6.5,height=4)
+   ggsave(paste0(name,"_subgroup.png"),fig_isscaap2,"png",path=fig_path,dpi=900,width=6.5,height=4)
 
   # for(i in com_ocean_group%>%select(ocean)%>%filter(ocean!="Arctic Sea")%>%distinct()%>%pull()){
   # fig<-ggplot(data=com_ocean_group%>%filter(ocean==i),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
@@ -558,6 +634,7 @@ report_content<-function(file,out=NULL){
   #   summarise(median = median(n))%>%
   #   group_by(f_area_type,f_area,f_area_label)%>%
   #   complete(Major_Group_En,fill=list(median=0))
+
 
   com_area_group<- data %>%
     select(c("f_area_type","f_area","f_area_label","flag","year","Major_Group_En","capture","species")) %>%
@@ -662,6 +739,7 @@ report_content<-function(file,out=NULL){
        com_area_group2<- data %>%
          filter(f_area!="07")%>%
          filter(Major_Group_En=="Fishes")%>%
+         mutate(ISSCAAP_Group_En=factor(ISSCAAP_Group_En,levels = ISSCAAPGroupLvl))%>%
          select(c("ocean","f_area_type","f_area","f_area_label","flag","year","ISSCAAP_Group_En","capture","species")) %>%
          group_by(ocean,f_area_type,f_area,f_area_label,flag,year,ISSCAAP_Group_En)%>%
          summarise(n=length(unique(species)))%>%
@@ -677,10 +755,22 @@ report_content<-function(file,out=NULL){
        com_area_type2 <- com_area_group2 %>%
          filter(f_area_type=="inland")
 
+       add<- com_area_type2[1,]
+       add$ISSCAAP_Group_En<-"Freshwater fishes"
+       add$pour<-0
+       add1<- add
+       add1$ISSCAAP_Group_En<-"Diadromous fishes"
+       add2<-add
+       add2$ISSCAAP_Group_En<-"Marine fishes"
+
+       com_area_type2 <-rbind(com_area_type2 ,add)
+       com_area_type2 <-rbind(com_area_type2 ,add1)
+       com_area_type2 <-rbind(com_area_type2 ,add2)
+
        fig_isscaap<-ggplot(data=com_area_type2,aes(x=f_area_label,y=pour,fill=ISSCAAP_Group_En))+
          geom_bar(stat="identity",position='stack',width = 0.8,show.legend = T)+
          labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
-         colScale+
+         SubGrScale+
          scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
          scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
          theme(text=element_text(family = 'sans'),
@@ -692,7 +782,7 @@ report_content<-function(file,out=NULL){
                legend.key = element_rect(fill = "white"),
                legend.key.size = unit(0.2, 'cm'),
                legend.title = element_blank(),
-               legend.text=element_text(size=7),
+               legend.text=element_markdown(size=7),
                legend.background = element_rect(fill="transparent"),
                panel.background = element_rect(fill="#efeff0"),
                panel.grid.major.y = element_line(linetype="dotted",color="grey50"),
@@ -743,20 +833,24 @@ report_content<-function(file,out=NULL){
        ggsave(fig_name,fig,"png",path=fig_path,dpi=900,width=6.5,height=9)
 }
       com_area_type2 <- com_area_group2 %>%
-        filter(f_area_type=="marine")%>%
-        group_by(ocean)%>%
-        mutate(nb=length(unique(f_area_label)))%>%
-        ungroup()%>%
-        mutate(fac=nb/max(nb))
+        filter(f_area_type=="marine")
 
-      fig_isccap<-ggplot(data=com_area_type2,aes(x=f_area_label,y=pour,fill=ISSCAAP_Group_En,width=.5*fac))+
-        geom_bar(stat="identity",position='stack',show.legend = TRUE)+
-        facet_wrap(~ocean,ncol=1,scales = "free_x")+
-        colScale+
-        geom_label(data=com_area_type2,mapping=aes(x = Inf, y = Inf, label = ocean), fill="#efeff0", label.size=0.2, hjust=1.05, vjust=1.5, size= 9 /.pt)+
+      add<- com_area_type2[1,]
+      add$ISSCAAP_Group_En<-"Diadromous fishes"
+      add$pour<-0
+      add2<-add
+      add2$ISSCAAP_Group_En<-"Marine fishes"
+
+      com_area_type2 <-rbind(com_area_type2 ,add)
+      com_area_type2 <-rbind(com_area_type2 ,add2)
+
+      fig_issccap<-ggplot(data=com_area_type2,aes(x=f_area_label,y=pour,fill=ISSCAAP_Group_En))+
+        geom_bar(stat="identity",position='stack',width = 0.8,show.legend = TRUE)+
+        SubGrScale+
         labs(x=NULL,y="Percentage",caption=source_text,fill=NULL)+
-        scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
+        scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1),breaks = seq(0, 1, by = 0.25))+
         scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
+        coord_flip()+
         theme(text=element_text(family = 'sans'),
               axis.title.y = element_text(size=9),
               axis.text.y = element_text(size=9),
@@ -766,7 +860,7 @@ report_content<-function(file,out=NULL){
               legend.key = element_rect(fill = "white"),
               legend.key.size = unit(0.2, 'cm'),
               legend.title = element_blank(),
-              legend.text=element_text(size=7),
+              legend.text=element_markdown(size=7),
               legend.background = element_rect(fill="transparent"),
               panel.background = element_rect(fill="#efeff0"),
               panel.grid.major.y = element_line(linetype="dotted",color="grey50"),
@@ -776,7 +870,7 @@ report_content<-function(file,out=NULL){
               plot.margin = unit(c(0,0,0,0), "cm"))
 
       fig_name<-paste0(name,"_part_subgroup",i,".png")
-      ggsave(fig_name,fig_isccap,"png",path=fig_path,dpi=900,width=6.5,height=9)
+      ggsave(fig_name,fig_issccap,"png",path=fig_path,dpi=900,width=6.5,height=9)
 
 
       ###############################################################################################################################
@@ -917,7 +1011,7 @@ report_content<-function(file,out=NULL){
 
       com_sp_ocean <- data %>%
         filter(f_area_type=="marine") %>%
-        filter(Major_Group_En %in% c("Fishes")) %>%
+        filter(Major_Group_En %in% c("Fishes"))%>%
         select(c("ocean","species","scientific_name","family","order","Taxonomic_Code","year",)) %>%
         mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
         distinct()%>%
@@ -1417,24 +1511,26 @@ report_content<-function(file,out=NULL){
    fig<-ggplot(richess_ocean, aes(Major_Group_En, ocean, fill= simpson)) +
      geom_tile(color = "white",lwd = 1.5,linetype = 1) +
      geom_text(aes(label = scales::comma(simpson,accuracy=0.01)), color = "white", size = 4)+
-     scale_fill_gradient(low="dodgerblue", high="dodgerblue4")+
+     scale_fill_gradient2(low="#caf0f8",mid="#48cae4",high="#023e8a",midpoint=0.5,limits=c(0,1))+
      labs(x=NULL,y=NULL,caption="SOURCE : FAO Global Capture Production",fill="Simpson index")+
      scale_y_discrete(limits=rev)+
      scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
-     theme(axis.title.y = element_text(size=10),
-           axis.text.y = element_text(size=10,vjust = 0.5),
-           axis.text.x = element_text(size=10,angle = 0, vjust = 0.5, hjust=0.5),
+     theme(axis.title.y = element_text(size=9),
+           axis.text.y = element_text(size=9,vjust = 0.5),
+           axis.text.x = element_text(size=7,angle = 0, vjust = 0.5, hjust=0.5),
            strip.background = element_blank(),
            strip.text.x = element_blank(),
-           panel.background = element_rect(fill="#f0f0f0"),
+           panel.background = element_rect(fill="#efeff0"),
+           legend.title = element_text(size=8),
+           legend.text = element_text(size=8),
            panel.grid.major.y = element_line(linetype="dotted",color="grey50"),
            panel.grid.major.x = element_blank(),
            panel.grid.minor = element_blank(),
            plot.caption = element_text(face = "italic",hjust=0,size=10,color="grey20"),
-           plot.margin = unit(c(0,0.5,0.5,0), "cm"))
+           plot.margin = unit(c(0,0,0,0), "cm"))
 
    fig_name<-paste0(name,".png")
-   ggsave(fig_name,fig,"png",path=fig_path,width=7,height=5)
+   ggsave(fig_name,fig,"png",path=fig_path,dpi=900,width=6.5,height=5)
 
    #major area
 
@@ -1477,24 +1573,26 @@ report_content<-function(file,out=NULL){
    fig<-ggplot(richess_area_type%>%filter(f_area!="07"), aes(Major_Group_En, f_area_label, fill= simpson)) +
      geom_tile(color = "white",lwd = 1.5,linetype = 1) +
      geom_text(aes(label = scales::comma(simpson,accuracy=0.01)), color = "white", size = 4)+
-     scale_fill_gradient(low="dodgerblue", high="dodgerblue4")+
+     scale_fill_gradient2(low="#caf0f8",mid="#48cae4",high="#023e8a",midpoint=0.5,limits=c(0,1))+
      labs(x=NULL,y=NULL,caption="SOURCE : FAO Global Capture Production",fill="Simpson index")+
      scale_y_discrete(limits=rev)+
      scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
-     theme(axis.title.y = element_text(size=10),
-           axis.text.y = element_text(size=10,vjust = 0.5),
-           axis.text.x = element_text(size=10,angle = 0, vjust = 0.5, hjust=0.5),
+     theme(axis.title.y = element_text(size=9),
+           axis.text.y = element_text(size=9,vjust = 0.5),
+           axis.text.x = element_text(size=7,angle = 0, vjust = 0.5, hjust=0.5),
            strip.background = element_blank(),
            strip.text.x = element_blank(),
-           panel.background = element_rect(fill="#f0f0f0"),
+           panel.background = element_rect(fill="#efeff0"),
+           legend.title = element_text(size=8),
+           legend.text = element_text(size=8),
            panel.grid.major.y = element_line(linetype="dotted",color="grey50"),
            panel.grid.major.x = element_blank(),
            panel.grid.minor = element_blank(),
            plot.caption = element_text(face = "italic",hjust=0,size=10,color="grey20"),
-           plot.margin = unit(c(0,0.5,0.5,0), "cm"))
+           plot.margin = unit(c(0,0,0,0), "cm"))
 
    fig_name<-paste0(name,".png")
-   ggsave(fig_name,fig,"png",path=fig_path,width=7,height=5)
+   ggsave(fig_name,fig,"png",path=fig_path,dpi=900,width=6.5,height=ifelse(i=="marine",6,5))
 
    }
 
