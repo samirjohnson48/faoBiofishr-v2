@@ -47,6 +47,7 @@ fao_n$f_area_type <- ifelse(fao_n$f_area%in%c("01","02","03","04","05","06","07"
 
 #ISSCAAP Group register
 gr<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/CL_FI_SPECIES_GROUPS.csv")
+#gr<-readr::read_csv(system.file("extdata","report_template.Rmd", package="faoBiofishr"))
 gr<-subset(gr,select=c('3A_Code','Taxonomic_Code','Name_En','Major_Group_En','ISSCAAP_Group_En'))
 names(gr)<-c('species','Taxonomic_Code','Name_En','Major_Group_En','ISSCAAP_Group_En')
 
@@ -86,9 +87,9 @@ data<-merge(data,dg,all.x = T,all.y=F)
 
 #Species register
 sp<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/CL_FI_SPECIES_ITEM.csv", col_names = T)
-
 sp<-subset(sp,select=c('Alpha3_Code','Family_mapping','Order_mapping','Scientific_Name','Name_En'))
 names(sp)<-c('species','family','order','scientific_name','sp_name_En')
+
 data<-merge(data,sp,all.x = T,all.y=F)
 
 #Ocean register
@@ -97,6 +98,7 @@ oc<-subset(oc,select=c('Code','Name_En'))
 names(oc)<-c('f_area','ocean')
 oc$ocean<-gsub("(.*),.*", "\\1", oc$ocean)
 oc$ocean<-ifelse(oc$f_area%in%c("01","02","03","04","05","06","07"),NA,oc$ocean)
+
 data<-merge(data,oc,all.x = T,all.y=F)
 
 #FAO Major Area register
@@ -108,7 +110,7 @@ data<-merge(data,ar,all.x = T,all.y=F)
 data$f_area_label<-paste0(data$f_area_name," [",data$f_area,"]")
 
 #FAO Countries register
-ct<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/country/CL_FI_COUNTRY_ITEM.csv", col_names = T)
+ct<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/country/CL_FI_COUNTRY_M49.csv", col_names = T)
 ct<-subset(ct,select=c('UN_Code','Name_En','ISO3_Code'))
 names(ct)<-c('flag','flag_name','flag_iso')
 
@@ -121,8 +123,8 @@ data <- data %>%
 data <- data%>%
   filter(!(f_area_type=="marine"&ISSCAAP_Division_En=="Freshwater fishes"))
 
-# data <- data%>%
-#   filter(!(f_area_type=="inland"&ISSCAAP_Division_En=="Marine fishes"))
+  data <- data%>%
+    filter(!(f_area_type=="inland"&ISSCAAP_Division_En=="Marine fishes"))
 
 data$Major_Group_En<-factor(data$Major_Group_En)
 
