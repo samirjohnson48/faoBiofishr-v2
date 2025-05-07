@@ -40,7 +40,7 @@ report_content<-function(file,out=NULL){
                                   "Crustaceans"="#F5B7B1",
                                   "Aquatic Invertebrates"="#F9E79F",
                                   "Aquatic Plants"="#ABEBC6"))
-  ISSCAAPScale <- scale_fill_manual(name="Major_Group_En", values=ISSCAAPColors)
+  ISSCAAPScale <- scale_fill_manual(name="Major_Group", values=ISSCAAPColors)
 
   ISSCAAPGroupLvl <- c("Freshwater fishes",
                 "Carps, barbels and other cyprinids",
@@ -116,7 +116,7 @@ report_content<-function(file,out=NULL){
   SubGrScale <- scale_fill_manual(values=SubGrLvl,labels=SubGrlabel)
 
    myColors <- scales::hue_pal()(17)
-   names(myColors) <- levels(as.factor(unique(data%>%filter(Major_Group_En=="Fishes")%>%pull(ISSCAAP_Group_En))))
+   names(myColors) <- levels(as.factor(unique(data%>%filter(Major_Group=="Fishes")%>%pull(ISSCAAP_Group_En))))
    colScale <- scale_fill_manual(name = "ISSCAAP_Group_En",values = myColors)
 
   ## Taxonomic line type
@@ -183,8 +183,8 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #### Data
 
   com_global <- data %>%
-    select(c("Major_Group_En","capture")) %>%
-    count(Major_Group_En) %>%
+    select(c("Major_Group","capture")) %>%
+    count(Major_Group) %>%
     mutate(sum = sum(n)) %>%
     mutate(pour = n/sum*100)%>%
     mutate(n=n/1000)
@@ -195,7 +195,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   com_global_table<-
 
     com_global%>%
-    select(c("Major_Group_En","n","pour"))%>%
+    select(c("Major_Group","n","pour"))%>%
     mutate(pour = round(pour,1))%>%
     mutate(n = round(n,1))%>%
     kable(format = "html",escape = FALSE,booktabs=T,align = "lcc",
@@ -209,12 +209,12 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   data %>%
     filter(year%in%seq(period_end-2,period_end))%>%
-    select(c("Major_Group_En","capture")) %>%
-    count(Major_Group_En) %>%
+    select(c("Major_Group","capture")) %>%
+    count(Major_Group) %>%
     mutate(sum = sum(n)) %>%
     mutate(pour = n/sum*100)%>%
     mutate(n=n/1000)%>%
-    select(c("Major_Group_En","n","pour"))%>%
+    select(c("Major_Group","n","pour"))%>%
     mutate(pour = round(pour,1))%>%
     mutate(n = round(n,1))%>%
     kable(format = "html",escape = FALSE,booktabs=T,align = "lcc",
@@ -231,14 +231,14 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
        sprintf('%s-%s',paste0(substring(as.character(year),1,3),0),paste0(substring(as.character(year),1,3),4)),
       sprintf('%s-%s',paste0(substring(as.character(year),1,3),5),paste0(substring(as.character(year),1,3),9)))
       )%>%
-    select(c("Major_Group_En","year","capture")) %>%
-    count(year,Major_Group_En) %>%
+    select(c("Major_Group","year","capture")) %>%
+    count(year,Major_Group) %>%
     group_by(year)%>%
     mutate(sum = sum(n)) %>%
-    group_by(year,Major_Group_En)%>%
+    group_by(year,Major_Group)%>%
     mutate(pour = n/sum*100)%>%
     mutate(n=n/1000)%>%
-    select(c("Major_Group_En","year","n","pour"))%>%
+    select(c("Major_Group","year","n","pour"))%>%
     mutate(pour = round(pour,1))%>%
     mutate(n = round(n,1))
 
@@ -256,11 +256,11 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   test_table<-rbind(test_table_v,test_table_p)
 
-  test_table$Major_Group_En<-factor(test_table$Major_Group_En,
+  test_table$Major_Group<-factor(test_table$Major_Group,
          levels = c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))
 
 
-  table<-test_table[order(test_table$Major_Group_En),]
+  table<-test_table[order(test_table$Major_Group),]
 
     table%>%
     kable(format = "html",escape = FALSE,booktabs=T,align = "l",
@@ -275,7 +275,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   #### Figure
 
-  fig<-ggplot(data=com_global,aes(x=Major_Group_En,y=n,fill=Major_Group_En))+
+  fig<-ggplot(data=com_global,aes(x=Major_Group,y=n,fill=Major_Group))+
     geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
     labs(x=NULL,y="Number of records (thousands)",fill=NULL)+
     geom_text(aes(label=scales::comma(n)), vjust=-0.3, color="grey40", size=9 / .pt)+
@@ -302,8 +302,8 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   tab_name<-paste0("ref_",name,".csv")
   write.csv(com_global%>%
-            select(Major_Group_En,n,pour)%>%
-            rename(ISSCAAP_Group = Major_Group_En)%>%
+            select(Major_Group,n,pour)%>%
+            rename(ISSCAAP_Group = Major_Group)%>%
             rename(Number_thousand = n)%>%
             rename(Pourcentage = pour)
               ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
@@ -314,7 +314,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   content$text[name]<-list("Text Place Holder")
   content$title[name]<-list("Average number of Unique Records (Species Items) per Country reported 19XX to 201X — by Taxonomic Groups and Ocean Basin")
   #glue("In FAO the word 'fish' is a term used as a collective term, that includes fish, molluscs, Crustaceans and any aquatic animal which is harvested. Definition source: FAO Fisheries and Aquaculture Department, FAO, 2014.
-  #FishStatJ capture production records (**{ min(as.numeric(data$year))}**-**{max(as.numeric(data$year))}** inclusive) contains **{round(subset(com_global,Major_Group_En=='Fishes')$pour,2)}**% vertebrate fish records more than records of molluscs **{round(subset(com_global,Major_Group_En=='Molluscs')$pour,2)}**% and Crustaceans **{round(subset(com_global,Major_Group_En=='Crustaceans')$pour,2)}**%. Aquatic plants has the least records in capture production dataset **{round(subset(com_global,Major_Group_En=='Aquatic Plants')$pour,2)}**%.")
+  #FishStatJ capture production records (**{ min(as.numeric(data$year))}**-**{max(as.numeric(data$year))}** inclusive) contains **{round(subset(com_global,Major_Group=='Fishes')$pour,2)}**% vertebrate fish records more than records of molluscs **{round(subset(com_global,Major_Group=='Molluscs')$pour,2)}**% and Crustaceans **{round(subset(com_global,Major_Group=='Crustaceans')$pour,2)}**%. Aquatic plants has the least records in capture production dataset **{round(subset(com_global,Major_Group=='Aquatic Plants')$pour,2)}**%.")
 
 
 ####Global record by fao area
@@ -360,13 +360,13 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 #Global by ISSCAAP group
   #By default
   com_global <- data %>%
-    select(c("ISSCAAP_Group_En","Major_Group_En","capture")) %>%
-    count(Major_Group_En,ISSCAAP_Group_En) %>%
+    select(c("ISSCAAP_Group_En","Major_Group","capture")) %>%
+    count(Major_Group,ISSCAAP_Group_En) %>%
     mutate(sum = sum(n)) %>%
     mutate(pour = n/sum*100)%>%
     mutate(n=n/1000)
 
-  fig<-ggplot(data=com_global,aes(x=Major_Group_En,y=n,fill=ISSCAAP_Group_En))+
+  fig<-ggplot(data=com_global,aes(x=Major_Group,y=n,fill=ISSCAAP_Group_En))+
     geom_bar(stat="identity",position="stack",width = 0.8,show.legend = T)+
     labs(x=NULL,y="Number of records (thousands)",fill=NULL)+
     #geom_text(aes(label=scales::comma(n)), vjust=-0.3, color="grey40", size=9 / .pt)+
@@ -387,21 +387,21 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
       #By 5
 
   com_global <- data %>%
-    select(c("ISSCAAP_Group_En","Major_Group_En","capture")) %>%
-    count(Major_Group_En,ISSCAAP_Group_En) %>%
+    select(c("ISSCAAP_Group_En","Major_Group","capture")) %>%
+    count(Major_Group,ISSCAAP_Group_En) %>%
     mutate(n=n/1000)%>%
-    group_by(Major_Group_En)%>%
+    group_by(Major_Group)%>%
     mutate(rank = rank(-n)) %>%
-    arrange(Major_Group_En,rank)%>%
+    arrange(Major_Group,rank)%>%
     ungroup()
 
   com_global<-rbind(as.data.frame(com_global%>%filter(rank<=5)),
-           as.data.frame(com_global%>%filter(rank>5) %>% group_by(Major_Group_En)%>%summarise(ISSCAAP_Group_En=paste0("others ", tolower(unique(Major_Group_En))),n=sum(n),rank=6))
+           as.data.frame(com_global%>%filter(rank>5) %>% group_by(Major_Group)%>%summarise(ISSCAAP_Group_En=paste0("others ", tolower(unique(Major_Group))),n=sum(n),rank=6))
   )
 
   # library(ggalluvial)
   #
-  # ggplot(com_global,aes(y = n, axis1 = ISSCAAP_Group_En, axis2 = Major_Group_En)) +
+  # ggplot(com_global,aes(y = n, axis1 = ISSCAAP_Group_En, axis2 = Major_Group)) +
   #      geom_alluvium(aes(fill = ISSCAAP_Group_En), width = 1/12,show.legend = F) +
   #      geom_stratum(width = 1/12, fill = "grey", color = "grey") +
   #      geom_text(stat = "stratum", aes(label = after_stat(stratum)),angle=0,size=7 / .pt) +
@@ -417,17 +417,17 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #### Data
 
   com_area_type <- data %>%
-    select(c("Major_Group_En","f_area_type","capture")) %>%
-    count(Major_Group_En,f_area_type)%>%
-    group_by(Major_Group_En)%>%
-    arrange(Major_Group_En,desc(f_area_type))%>%
+    select(c("Major_Group","f_area_type","capture")) %>%
+    count(Major_Group,f_area_type)%>%
+    group_by(Major_Group)%>%
+    arrange(Major_Group,desc(f_area_type))%>%
     mutate(n=n/1000)%>%
     mutate(pour=(n/sum(n))*100)%>%
     mutate(lab_ypos = ifelse(f_area_type=="marine",-10, cumsum(n)+10))
 
   #### Figure
 
-  fig<-ggplot(data=com_area_type,aes(x=Major_Group_En,y=n,fill=f_area_type))+
+  fig<-ggplot(data=com_area_type,aes(x=Major_Group,y=n,fill=f_area_type))+
     geom_bar(stat="identity",position="stack")+
     geom_text(aes(y=lab_ypos,label=sprintf("%s (%s%%)",scales::comma(n),format(round(pour,1), nsmall = 1)),colour=f_area_type), size=9 / .pt,show.legend = F)+
     scale_fill_manual(values=c("#F7DC6F", "#85C1E9"))+
@@ -457,7 +457,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
           plot.caption = element_text(face = "italic",hjust=0,size=9,color="grey20"),
           plot.margin = unit(c(0,0,0,0), "cm"))
 
-  # fig_blue<-ggplot(data=com_area_type,aes(x=Major_Group_En,y=n,fill=f_area_type))+
+  # fig_blue<-ggplot(data=com_area_type,aes(x=Major_Group,y=n,fill=f_area_type))+
   #   geom_bar(stat="identity",position="stack")+
   #   geom_text(aes(y=lab_ypos,label=scales::comma(n),colour=f_area_type), size=9 / .pt,show.legend = F)+
   #   scale_fill_manual(values=c("#80dfff", "#0099cc"))+
@@ -489,8 +489,8 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   tab_name<-paste0("ref_",name,".csv")
 
   write.csv(com_area_type%>%
-              select(Major_Group_En,f_area_type,n)%>%
-              rename(ISSCAAP_Group = Major_Group_En)%>%
+              select(Major_Group,f_area_type,n)%>%
+              rename(ISSCAAP_Group = Major_Group)%>%
               rename(Number_thousand = n)%>%
               rename(FAO_Area_Type = f_area_type)
             ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
@@ -512,23 +512,23 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
    com_ocean_group<- data %>%
      filter(!is.na(ocean))%>%
-     select(c("ocean","flag","year","Major_Group_En","capture","species")) %>%
-     group_by(ocean,flag,year,Major_Group_En)%>%
+     select(c("ocean","flag","year","Major_Group","capture","species")) %>%
+     group_by(ocean,flag,year,Major_Group)%>%
      summarise(n=length(unique(species)))%>%
      ungroup()%>%
-     complete(nesting(ocean,flag,year),Major_Group_En,fill=list(n=0))%>%
+     complete(nesting(ocean,flag,year),Major_Group,fill=list(n=0))%>%
      group_by(ocean,flag,year)%>%
      mutate(sum=sum(n))%>%
-     group_by(ocean,flag,year,Major_Group_En)%>%
+     group_by(ocean,flag,year,Major_Group)%>%
      mutate(pourc=n/sum)%>%
-     group_by(ocean,year,Major_Group_En)%>%
+     group_by(ocean,year,Major_Group)%>%
      summarise(meanOfFlag= mean(pourc))%>%
-     group_by(ocean,Major_Group_En)%>%
+     group_by(ocean,Major_Group)%>%
      summarise(meanOfYear= mean(meanOfFlag),maxOfYear= max(meanOfFlag),minOfYear= min(meanOfFlag),nbOfYear= n(),sdOfYear=sd(meanOfFlag),seOfYear=sd(meanOfFlag)/sqrt(n()))%>%
      ungroup()
 
    com_ocean_group_isscaap2<- data %>%
-     filter(Major_Group_En=="Fishes")%>%
+     filter(Major_Group=="Fishes")%>%
      mutate(ISSCAAP_Group_En=factor(ISSCAAP_Group_En,levels = ISSCAAPGroupLvl))%>%
      filter(!is.na(ocean))%>%
      #filter(ocean!="Arctic Sea")%>%
@@ -562,13 +562,13 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   #### Figure
 
-   fig<-ggplot(data=com_ocean_group%>%filter(ocean!="Arctic Sea"),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
+   fig<-ggplot(data=com_ocean_group%>%filter(ocean!="Arctic Sea"),aes(x=Major_Group,y=meanOfYear,fill=Major_Group))+
      geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
      geom_errorbar(aes(ymin=meanOfYear-seOfYear, ymax=meanOfYear+seOfYear), width=.1,color="grey50",position=position_dodge(1))+
      geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01,suffix =""),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 / .pt)+
      facet_wrap(~ocean,ncol=2)+
      ISSCAAPScale+
-     geom_label(data=com_ocean_group%>%filter(ocean!="Arctic Sea")%>%filter(Major_Group_En=="Fishes"),mapping=aes(x = Inf, y = Inf, label = ocean), fill="#f8f8f8", label.size=0,hjust=1.05, vjust=1.5, size= 9 / .pt)+
+     geom_label(data=com_ocean_group%>%filter(ocean!="Arctic Sea")%>%filter(Major_Group=="Fishes"),mapping=aes(x = Inf, y = Inf, label = ocean), fill="#f8f8f8", label.size=0,hjust=1.05, vjust=1.5, size= 9 / .pt)+
      labs(x=NULL,y="Percentage",fill=NULL)+
      scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits=c(0,1),breaks = seq(0, 1, by = 0.25))+
      scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
@@ -614,7 +614,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
    ggsave(paste0(name,"_subgroup.png"),fig_isscaap2,"png",path=fig_path,dpi=900,width=6.5,height=4)
 
   # for(i in com_ocean_group%>%select(ocean)%>%filter(ocean!="Arctic Sea")%>%distinct()%>%pull()){
-  # fig<-ggplot(data=com_ocean_group%>%filter(ocean==i),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
+  # fig<-ggplot(data=com_ocean_group%>%filter(ocean==i),aes(x=Major_Group,y=meanOfYear,fill=Major_Group))+
   #   geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
   #   geom_errorbar(aes(ymin=meanOfYear-sdOfYear, ymax=meanOfYear+sdOfYear), width=.1,color="grey40",position=position_dodge(1))+
   #   geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01)), vjust=-1.1, color="grey40", size=9 / .pt)+
@@ -637,7 +637,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #         plot.caption = element_text(face = "italic",hjust=0,size=6,color="grey20"),
   #         plot.margin = unit(c(0,0,0,0), "cm"))
   #
-  # # fig_per_2<-ggplot(data=com_ocean_group_per%>%filter(ocean!="Arctic Sea"),aes(x=ocean,y=percent,fill=Major_Group_En))+
+  # # fig_per_2<-ggplot(data=com_ocean_group_per%>%filter(ocean!="Arctic Sea"),aes(x=ocean,y=percent,fill=Major_Group))+
   # #   geom_bar(stat="identity",width = 0.8,position="stack",show.legend = TRUE)+
   # #   ISSCAAPScale+
   # #   labs(x=NULL,y="Average number of unique records per country (in percent)",caption="SOURCE : FAO Global Capture Production",fill=NULL)+
@@ -666,7 +666,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   tab_name<-paste0("ref_",name,".csv")
 
   write.csv(com_ocean_group%>%
-              select(Major_Group_En,ocean,meanOfYear)
+              select(Major_Group,ocean,meanOfYear)
             ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
 
   content$tab[name]<-list(file.path(tab_path,tab_name))
@@ -689,28 +689,28 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #### Data
 
   # com_area_group <- data %>%
-  #   select(c("f_area_type","f_area","f_area_label","flag","Major_Group_En","capture")) %>%
-  #   count(f_area_type,f_area,f_area_label,flag,Major_Group_En)%>%
-  #   group_by(f_area_type,f_area,f_area_label,Major_Group_En)%>%
+  #   select(c("f_area_type","f_area","f_area_label","flag","Major_Group","capture")) %>%
+  #   count(f_area_type,f_area,f_area_label,flag,Major_Group)%>%
+  #   group_by(f_area_type,f_area,f_area_label,Major_Group)%>%
   #   mutate(n=n/1000)%>%
   #   summarise(median = median(n))%>%
   #   group_by(f_area_type,f_area,f_area_label)%>%
-  #   complete(Major_Group_En,fill=list(median=0))
+  #   complete(Major_Group,fill=list(median=0))
 
 
   com_area_group<- data %>%
-    select(c("f_area_type","f_area","f_area_label","flag","year","Major_Group_En","capture","species")) %>%
-    group_by(f_area_type,f_area,f_area_label,flag,year,Major_Group_En)%>%
+    select(c("f_area_type","f_area","f_area_label","flag","year","Major_Group","capture","species")) %>%
+    group_by(f_area_type,f_area,f_area_label,flag,year,Major_Group)%>%
     summarise(n=length(unique(species)))%>%
     ungroup()%>%
-    complete(nesting(f_area_type,f_area,f_area_label,flag,year),Major_Group_En,fill=list(n=0))%>%
+    complete(nesting(f_area_type,f_area,f_area_label,flag,year),Major_Group,fill=list(n=0))%>%
     group_by(f_area_type,f_area,f_area_label,flag,year)%>%
     mutate(sum=sum(n))%>%
-    group_by(f_area_type,f_area,f_area_label,flag,year,Major_Group_En)%>%
+    group_by(f_area_type,f_area,f_area_label,flag,year,Major_Group)%>%
     mutate(pourc=n/sum)%>%
-    group_by(f_area_type,f_area,f_area_label,year,Major_Group_En)%>%
+    group_by(f_area_type,f_area,f_area_label,year,Major_Group)%>%
     summarise(meanOfFlag= mean(pourc))%>%
-    group_by(f_area_type,f_area,f_area_label,Major_Group_En)%>%
+    group_by(f_area_type,f_area,f_area_label,Major_Group)%>%
     summarise(meanOfYear= mean(meanOfFlag),maxOfYear= max(meanOfFlag),minOfYear= min(meanOfFlag),nbOfYear= n(),sdOfYear=sd(meanOfFlag),seOfYear=sd(meanOfFlag)/sqrt(n()))%>%
     ungroup()
 
@@ -726,13 +726,13 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #
   # #### Figure
   #
-  #    fig<-ggplot(data=com_area_type%>%filter(f_area!="07"),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
+  #    fig<-ggplot(data=com_area_type%>%filter(f_area!="07"),aes(x=Major_Group,y=meanOfYear,fill=Major_Group))+
   #       geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
   #       geom_errorbar(aes(ymin=meanOfYear-sdOfYear, ymax=meanOfYear+sdOfYear), width=.1,color="grey40",position=position_dodge(1))+
   #       geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01)), vjust=-0.3, color="grey40", size=4)+
   #       facet_wrap(~f_area_label,ncol=nb_col)+
   #       ISSCAAPScale+
-  #      geom_text(data=com_area_type%>%filter(f_area!="07")%>%filter(Major_Group_En=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 5)+
+  #      geom_text(data=com_area_type%>%filter(f_area!="07")%>%filter(Major_Group=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), hjust=1.05, vjust=1.5, size= 5)+
   #      labs(x=NULL,y="Average number of unique records per country (in percent)",caption="SOURCE : FAO Global Capture Production",fill=NULL)+
   #      scale_y_continuous(labels = scales::percent)+
   #       scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
@@ -771,13 +771,13 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   # #### Figure
   #
-      fig<-ggplot(data=com_area_type%>%filter(f_area!="07"),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
+      fig<-ggplot(data=com_area_type%>%filter(f_area!="07"),aes(x=Major_Group,y=meanOfYear,fill=Major_Group))+
          geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
          geom_errorbar(aes(ymin=meanOfYear-seOfYear, ymax=meanOfYear+seOfYear), width=.1,color="grey50",position=position_dodge(1))+
          geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01,suffix=""),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 /.pt)+
          facet_wrap(~f_area_label,ncol=2)+
          ISSCAAPScale+
-        geom_label(data=com_area_type%>%filter(f_area!="07")%>%filter(Major_Group_En=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), fill="#f8f8f8", label.size=0, hjust=1.05, vjust=1.5, size= 9 /.pt)+
+        geom_label(data=com_area_type%>%filter(f_area!="07")%>%filter(Major_Group=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), fill="#f8f8f8", label.size=0, hjust=1.05, vjust=1.5, size= 9 /.pt)+
         labs(x=NULL,y="Percentage",fill=NULL)+
         scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
          scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
@@ -805,7 +805,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
        com_area_group2<- data %>%
          filter(f_area!="07")%>%
-         filter(Major_Group_En=="Fishes")%>%
+         filter(Major_Group=="Fishes")%>%
          mutate(ISSCAAP_Group_En=factor(ISSCAAP_Group_En,levels = ISSCAAPGroupLvl))%>%
          select(c("ocean","f_area_type","f_area","f_area_label","flag","year","ISSCAAP_Group_En","capture","species")) %>%
          group_by(ocean,f_area_type,f_area,f_area_label,flag,year,ISSCAAP_Group_En)%>%
@@ -879,13 +879,13 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
        # #### Figure
        for (i in unique(com_area_type$part)){
 
-       fig<-ggplot(data=com_area_type%>%filter(part==i),aes(x=Major_Group_En,y=meanOfYear,fill=Major_Group_En))+
+       fig<-ggplot(data=com_area_type%>%filter(part==i),aes(x=Major_Group,y=meanOfYear,fill=Major_Group))+
          geom_bar(stat="identity",width = 0.8,show.legend = FALSE)+
          geom_errorbar(aes(ymin=meanOfYear-seOfYear, ymax=meanOfYear+seOfYear), width=.1,color="grey50",position=position_dodge(1))+
          geom_text(aes(label=scales::percent(meanOfYear, accuracy=0.01,suffix=""),y=meanOfYear+seOfYear), vjust=-0.5, color="grey40", size=9 /.pt)+
          facet_wrap(~f_area_label,ncol=2)+
          ISSCAAPScale+
-         geom_label(data=com_area_type%>%filter(part==i)%>%filter(Major_Group_En=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), fill="#f8f8f8", label.size=0, hjust=1.05, vjust=1.5, size= 9 /.pt)+
+         geom_label(data=com_area_type%>%filter(part==i)%>%filter(Major_Group=="Fishes"),mapping=aes(x = Inf, y = Inf, label = f_area_label), fill="#f8f8f8", label.size=0, hjust=1.05, vjust=1.5, size= 9 /.pt)+
          labs(x=NULL,y="Percentage",fill=NULL)+
          scale_y_continuous(labels = function(x) scales::percent(x,suffix=""), limits =c(0,1.1),breaks = seq(0, 1, by = 0.25))+
          scale_x_discrete(labels = function(x) stringr::str_wrap(x, width = 15))+
@@ -964,7 +964,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
       #### Data
       # com_sp_lvl <- data %>%
-      #   filter(Major_Group_En %in% c("Fishes")) %>%
+      #   filter(Major_Group %in% c("Fishes")) %>%
       #   select(c("species","scientific_name","family","order","Taxonomic_Code","year")) %>%
       #   mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
       #   distinct()%>%
@@ -978,7 +978,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
       #   select(-grp)
 
       com_sp_lvl <- data %>%
-        filter(Major_Group_En %in% c("Fishes")) %>%
+        filter(Major_Group %in% c("Fishes")) %>%
         select(c("species","scientific_name","family","order","Taxonomic_Code","year")) %>%
         mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
         distinct()%>%
@@ -1027,7 +1027,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
         labs(x=NULL,y="Aggregated groups (percentages)",color=NULL)+
         scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1),breaks = seq(0, 1, by = 0.25),
                            sec.axis = sec_axis(~./(max(com_sp_lvl$pour)/max(com_sp_lvl$nb_sp)), name="Total taxa (number)"))+
-        scale_x_continuous(breaks = seq(min(com_sp_lvl$year),max(com_sp_lvl$year),10))+
+        scale_x_continuous(breaks = seq(min(com_sp_lvl$year),max(com_sp_lvl$year),5))+
         theme(text=element_text(family = 'sans'),
               axis.title.y = element_text(size=9),
               axis.text.y = element_text(size=9),
@@ -1077,7 +1077,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
       # com_sp_ocean <- data %>%
       #   filter(f_area_type=="marine") %>%
-      #   filter(Major_Group_En %in% c("Fishes")) %>%
+      #   filter(Major_Group %in% c("Fishes")) %>%
       #   select(c("flag","ocean","species","scientific_name","family","order","Taxonomic_Code","year",)) %>%
       #   mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
       #   distinct()%>%
@@ -1096,7 +1096,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
       com_sp_ocean <- data %>%
         filter(f_area_type=="marine") %>%
-        filter(Major_Group_En %in% c("Fishes"))%>%
+        filter(Major_Group %in% c("Fishes"))%>%
         select(c("ocean","species","scientific_name","family","order","Taxonomic_Code","year",)) %>%
         mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
         distinct()%>%
@@ -1124,7 +1124,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
         facet_wrap(~ocean,ncol=2)+
         scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
                            sec.axis = sec_axis(~./(max(com_sp_ocean$pour)/max(com_sp_ocean$nb_sp)), name="Total taxa (number)"))+
-        scale_x_continuous(breaks = seq(min(com_sp_ocean$year),max(com_sp_ocean$year),10))+
+        scale_x_continuous(breaks = seq(min(com_sp_ocean$year),max(com_sp_ocean$year),5))+
         theme(text=element_text(family = 'sans'),
               axis.title.y = element_text(size=9),
               axis.text.y = element_text(size=9),
@@ -1177,7 +1177,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
         name<-paste0("com_sp_nbtax_f_area_inland")
 
         com_sp_area_type <- data %>%
-          filter(Major_Group_En %in% c("Fishes")) %>%
+          filter(Major_Group %in% c("Fishes")) %>%
           filter(f_area_type == "inland") %>%
           filter(f_area!="07")%>%
           select(c("f_area_label","species","scientific_name","family","order","Taxonomic_Code","year")) %>%
@@ -1208,7 +1208,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
           facet_wrap(~f_area_label,ncol=2)+
           scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
                              sec.axis = sec_axis(~./(max(com_sp_area_type$pour)/max(com_sp_area_type$nb_sp)), name="Total taxa (number)"))+
-          scale_x_continuous(breaks = seq(min(com_sp_area_type$year),max(com_sp_area_type$year),10))+
+          scale_x_continuous(breaks = seq(min(com_sp_area_type$year),max(com_sp_area_type$year),5))+
           theme(text=element_text(family = 'sans'),
                 axis.title.y = element_text(size=9),
                 axis.text.y = element_text(size=9),
@@ -1250,7 +1250,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
         name<-paste0("com_sp_nbtax_f_area_marine")
 
         com_sp_area_type <- data %>%
-          filter(Major_Group_En %in% c("Fishes")) %>%
+          filter(Major_Group %in% c("Fishes")) %>%
           filter(f_area_type == "marine") %>%
           select(c("f_area_label","species","scientific_name","family","order","Taxonomic_Code","year")) %>%
           mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
@@ -1284,7 +1284,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
             facet_wrap(~f_area_label,ncol=2)+
             scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
                                sec.axis = sec_axis(~./(max(com_sp_area_type_part$pour,na.rm=T)/max(com_sp_area_type_part$nb_sp,na.rm=T)), name="Total taxa (number)"))+
-            scale_x_continuous(breaks = seq(min(com_sp_area_type_part$year),max(com_sp_area_type_part$year),10))+
+            scale_x_continuous(breaks = seq(min(com_sp_area_type_part$year),max(com_sp_area_type_part$year),5))+
             theme(text=element_text(family = 'sans'),
                   axis.title.y = element_text(size=9),
                   axis.text.y = element_text(size=9),
@@ -1337,7 +1337,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
         #### Data
 
         com_sp_rec <- data %>%
-          filter(Major_Group_En %in% c("Fishes")) %>%
+          filter(Major_Group %in% c("Fishes")) %>%
           select(c("species","scientific_name","family","order","Taxonomic_Code","year")) %>%
           mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
           count(level)%>%
@@ -1363,7 +1363,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
         #### Data
 
         com_sp_lvl <- data %>%
-          filter(Major_Group_En %in% c("Fishes")) %>%
+          filter(Major_Group %in% c("Fishes")) %>%
           select(c("species","scientific_name","family","order","Taxonomic_Code","year")) %>%
           mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
           count(year,level)%>%
@@ -1386,7 +1386,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
           labs(x=NULL,y="Aggregated groups (percentages)",color=NULL)+
           scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1),breaks = seq(0, 1, by = 0.25),
                              sec.axis = sec_axis(~./(max(com_sp_lvl$pour)/max(com_sp_lvl$nb_sp)), name="Total records (number in thousands)"))+
-          scale_x_continuous(breaks = seq(min(com_sp_lvl$year),max(com_sp_lvl$year),10))+
+          scale_x_continuous(breaks = seq(min(com_sp_lvl$year),max(com_sp_lvl$year),5))+
           theme(text=element_text(family = 'sans'),
                 axis.title.y = element_text(size=9),
                 axis.text.y = element_text(size=9),
@@ -1436,7 +1436,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
         com_sp_ocean <- data %>%
           filter(f_area_type=="marine") %>%
-          filter(Major_Group_En %in% c("Fishes"))%>%
+          filter(Major_Group %in% c("Fishes"))%>%
           select(c("ocean","species","scientific_name","family","order","Taxonomic_Code","year",)) %>%
           mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
           count(ocean,year,level)%>%
@@ -1464,7 +1464,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
           facet_wrap(~ocean,ncol=2)+
           scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
                              sec.axis = sec_axis(~./(max(com_sp_ocean$pour)/max(com_sp_ocean$nb_sp)), name="Total records (number in thousands)"))+
-          scale_x_continuous(breaks = seq(min(com_sp_ocean$year),max(com_sp_ocean$year),10))+
+          scale_x_continuous(breaks = seq(min(com_sp_ocean$year),max(com_sp_ocean$year),5))+
           theme(text=element_text(family = 'sans'),
                 axis.title.y = element_text(size=9),
                 axis.text.y = element_text(size=9),
@@ -1517,7 +1517,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
         name<-paste0("com_sp_nbrec_f_area_inland")
 
         com_sp_area_type <- data %>%
-          filter(Major_Group_En %in% c("Fishes")) %>%
+          filter(Major_Group %in% c("Fishes")) %>%
           filter(f_area_type == "inland") %>%
           filter(f_area!="07")%>%
           select(c("f_area_label","species","scientific_name","family","order","Taxonomic_Code","year")) %>%
@@ -1548,7 +1548,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
           facet_wrap(~f_area_label,ncol=2)+
           scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
                              sec.axis = sec_axis(~./(max(com_sp_area_type$pour)/max(com_sp_area_type$nb_sp)), name="Total records (number in thousands)"))+
-          scale_x_continuous(breaks = seq(min(com_sp_area_type$year),max(com_sp_area_type$year),10))+
+          scale_x_continuous(breaks = seq(min(com_sp_area_type$year),max(com_sp_area_type$year),5))+
           theme(text=element_text(family = 'sans'),
                 axis.title.y = element_text(size=9),
                 axis.text.y = element_text(size=9),
@@ -1590,7 +1590,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
         name<-paste0("com_sp_nbrec_f_area_marine")
 
         com_sp_area_type <- data %>%
-          filter(Major_Group_En %in% c("Fishes")) %>%
+          filter(Major_Group %in% c("Fishes")) %>%
           filter(f_area_type == "marine") %>%
           select(c("f_area_label","species","scientific_name","family","order","Taxonomic_Code","year")) %>%
           mutate(level=ifelse(stringr::str_detect(Taxonomic_Code,"X")==FALSE,"species",ifelse(is.na(family),"nei","family")))%>%
@@ -1624,7 +1624,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
             facet_wrap(~f_area_label,ncol=2)+
             scale_y_continuous(labels = function(x) scales::percent(x,suffix=""),limits=c(0,1.2),breaks = seq(0, 1, by = 0.25),
                                sec.axis = sec_axis(~./(max(com_sp_area_type_part$pour,na.rm=T)/max(com_sp_area_type_part$nb_sp,na.rm=T)), name="Total records (number in thousands)"))+
-            scale_x_continuous(breaks = seq(min(com_sp_area_type_part$year),max(com_sp_area_type_part$year),10))+
+            scale_x_continuous(breaks = seq(min(com_sp_area_type_part$year),max(com_sp_area_type_part$year),5))+
             theme(text=element_text(family = 'sans'),
                   axis.title.y = element_text(size=9),
                   axis.text.y = element_text(size=9),
@@ -1678,14 +1678,14 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   ocean_nb_sp<- data %>%
     filter(!is.na(ocean))%>%
     filter(year %in% seq(period_end-9,period_end,1))%>%
-    select(c("ocean","Major_Group_En","species")) %>%
-    group_by(ocean,Major_Group_En)%>%
+    select(c("ocean","Major_Group","species")) %>%
+    group_by(ocean,Major_Group)%>%
     summarise(n=length(unique(species)))%>%
     ungroup()%>%
-    complete(ocean,Major_Group_En,fill=list(n=0))%>%
+    complete(ocean,Major_Group,fill=list(n=0))%>%
     group_by(ocean)%>%
     mutate(sum=sum(n))%>%
-    group_by(ocean,Major_Group_En)%>%
+    group_by(ocean,Major_Group)%>%
     mutate(pourc=n/sum*100)%>%
     select(-sum)%>%
   ungroup()
@@ -1693,13 +1693,13 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   ocean_nb_sp_table_v<- ocean_nb_sp%>%
     rename(value=n)%>%
     select(-pourc)%>%
-    pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = 0)%>%
+    pivot_wider(names_from = Major_Group,values_from = value,values_fill = 0)%>%
     ungroup()
 
   ocean_nb_sp_table_p<- ocean_nb_sp%>%
     mutate(value=paste0("(",round(pourc,2),"%)"))%>%
     select(-n,-pourc)%>%
-    pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "(O%)")%>%
+    pivot_wider(names_from = Major_Group,values_from = value,values_fill = "(O%)")%>%
     ungroup()
 
   ocean_nb_sp_table<-rbind(ocean_nb_sp_table_v,ocean_nb_sp_table_p)
@@ -1731,14 +1731,14 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #fao major area
   major_area_nb_sp<- data %>%
     filter(year %in% seq(period_end-9,period_end,1))%>%
-    select(c("f_area_type","f_area","f_area_label","Major_Group_En","species")) %>%
-    group_by(f_area_type,f_area,f_area_label,Major_Group_En)%>%
+    select(c("f_area_type","f_area","f_area_label","Major_Group","species")) %>%
+    group_by(f_area_type,f_area,f_area_label,Major_Group)%>%
     summarise(n=length(unique(species)))%>%
     ungroup()%>%
-    complete(nesting(f_area_type,f_area,f_area_label),Major_Group_En,fill=list(n=0))%>%
+    complete(nesting(f_area_type,f_area,f_area_label),Major_Group,fill=list(n=0))%>%
     group_by(f_area_type,f_area,f_area_label)%>%
     mutate(sum=sum(n))%>%
-    group_by(f_area_type,f_area,f_area_label,Major_Group_En)%>%
+    group_by(f_area_type,f_area,f_area_label,Major_Group)%>%
     mutate(pourc=n/sum*100)%>%
     select(-sum)%>%
     ungroup()
@@ -1748,7 +1748,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
       filter(f_area_type==i)%>%
       mutate(value=paste0(n," [",round(pourc,2),"%]"))%>%
       select(-n,-pourc)%>%
-      pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
+      pivot_wider(names_from = Major_Group,values_from = value,values_fill = "0 [O%]")%>%
       ungroup()
   print(area_type_nb_sp)
   name<-paste0("taxa_richess_",i)
@@ -1764,9 +1764,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   multi_ocean<- data%>%
     filter(!is.na(ocean))%>%
     filter(year %in% seq(period_end-9,period_end,1))%>%
-    select(ocean,Major_Group_En,species,capture)%>%
-    mutate(code=paste0(ocean,"-",Major_Group_En))%>%
-    select(-ocean,-Major_Group_En)%>%
+    select(ocean,Major_Group,species,capture)%>%
+    mutate(code=paste0(ocean,"-",Major_Group))%>%
+    select(-ocean,-Major_Group)%>%
     mutate(capture=1)%>%
     distinct()%>%
     pivot_wider(names_from = code,values_from = capture,values_fill = 0)%>%
@@ -1776,19 +1776,19 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     pivot_longer(!species, names_to = "code", values_to = "count")%>%
     group_by(code)%>%
     summarise(morethan2=sum(count))%>%
-    separate(code, c("ocean", "Major_Group_En"), sep = "-")%>%
-    complete(ocean,Major_Group_En,fill=list(morethan2=0))%>%
+    separate(code, c("ocean", "Major_Group"), sep = "-")%>%
+    complete(ocean,Major_Group,fill=list(morethan2=0))%>%
     ungroup()%>%
-    inner_join(select(ocean_nb_sp,ocean,Major_Group_En,n))%>%
-    group_by(ocean,Major_Group_En)%>%
+    inner_join(select(ocean_nb_sp,ocean,Major_Group,n))%>%
+    group_by(ocean,Major_Group)%>%
     mutate(pourc=morethan2/n*100)
 
   multi_ocean_table<-multi_ocean%>%
-    group_by(ocean,Major_Group_En)%>%
+    group_by(ocean,Major_Group)%>%
     mutate(value=if(!is.nan(pourc)){paste0(morethan2," [",round(pourc,2),"%]")}else{"_"})%>%
-    select(ocean,Major_Group_En,value)%>%
-    arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
-    pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
+    select(ocean,Major_Group,value)%>%
+    arrange(match(Major_Group, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
+    pivot_wider(names_from = Major_Group,values_from = value,values_fill = "0 [O%]")%>%
     ungroup()
 
   tab_name<-paste0("ref_",name,".csv")
@@ -1797,9 +1797,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   multi_area<- data%>%
     filter(year %in% seq(period_end-9,period_end,1))%>%
-    select(f_area_type,f_area_label,Major_Group_En,species,capture)%>%
-    mutate(code=paste0(f_area_type,"_",f_area_label,"_",Major_Group_En))%>%
-    select(-f_area_type,-f_area_label,-Major_Group_En)%>%
+    select(f_area_type,f_area_label,Major_Group,species,capture)%>%
+    mutate(code=paste0(f_area_type,"_",f_area_label,"_",Major_Group))%>%
+    select(-f_area_type,-f_area_label,-Major_Group)%>%
     mutate(capture=1)%>%
     distinct()%>%
     pivot_wider(names_from = code,values_from = capture,values_fill = 0)%>%
@@ -1809,11 +1809,11 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     pivot_longer(!species, names_to = "code", values_to = "count")%>%
     group_by(code)%>%
     summarise(morethan2=sum(count))%>%
-    separate(code, c("f_area_type","f_area_label", "Major_Group_En"), sep = "_")%>%
-    complete(nesting(f_area_type,f_area_label),Major_Group_En,fill=list(morethan2=0))%>%
+    separate(code, c("f_area_type","f_area_label", "Major_Group"), sep = "_")%>%
+    complete(nesting(f_area_type,f_area_label),Major_Group,fill=list(morethan2=0))%>%
     ungroup()%>%
-    inner_join(select(major_area_nb_sp,f_area_type,f_area_label,Major_Group_En,n))%>%
-    group_by(f_area_type,f_area_label,Major_Group_En)%>%
+    inner_join(select(major_area_nb_sp,f_area_type,f_area_label,Major_Group,n))%>%
+    group_by(f_area_type,f_area_label,Major_Group)%>%
     mutate(pourc=morethan2/n*100)
 
   for(i in unique(multi_area$f_area_type)){
@@ -1821,9 +1821,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     multi_area_type <- multi_area %>%
       filter(f_area_type==i)%>%
       mutate(value=if(!is.nan(pourc)){paste0(morethan2," [",round(pourc,2),"%]")}else{"_"})%>%
-      select(f_area_label,Major_Group_En,value)%>%
-      arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
-      pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
+      select(f_area_label,Major_Group,value)%>%
+      arrange(match(Major_Group, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
+      pivot_wider(names_from = Major_Group,values_from = value,values_fill = "0 [O%]")%>%
       ungroup()
 
     print(multi_area_type)
@@ -1840,9 +1840,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   unique_ocean<- data%>%
     filter(!is.na(ocean))%>%
     filter(year %in% seq(period_end-9,period_end,1))%>%
-    select(ocean,Major_Group_En,species,capture)%>%
-    mutate(code=paste0(ocean,"-",Major_Group_En))%>%
-    select(-ocean,-Major_Group_En)%>%
+    select(ocean,Major_Group,species,capture)%>%
+    mutate(code=paste0(ocean,"-",Major_Group))%>%
+    select(-ocean,-Major_Group)%>%
     mutate(capture=1)%>%
     distinct()%>%
     pivot_wider(names_from = code,values_from = capture,values_fill = 0)%>%
@@ -1852,19 +1852,19 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     pivot_longer(!species, names_to = "code", values_to = "count")%>%
     group_by(code)%>%
     summarise(unique_nb=sum(count))%>%
-    separate(code, c("ocean", "Major_Group_En"), sep = "-")%>%
-    complete(ocean,Major_Group_En,fill=list(unique_nb=0))%>%
+    separate(code, c("ocean", "Major_Group"), sep = "-")%>%
+    complete(ocean,Major_Group,fill=list(unique_nb=0))%>%
     ungroup()%>%
-    inner_join(select(ocean_nb_sp,ocean,Major_Group_En,n))%>%
-    group_by(ocean,Major_Group_En)%>%
+    inner_join(select(ocean_nb_sp,ocean,Major_Group,n))%>%
+    group_by(ocean,Major_Group)%>%
     mutate(pourc=unique_nb/n*100)
 
   unique_ocean_table<-unique_ocean%>%
-    group_by(ocean,Major_Group_En)%>%
+    group_by(ocean,Major_Group)%>%
     mutate(value=if(!is.nan(pourc)){paste0(unique_nb," [",round(pourc,2),"%]")}else{"_"})%>%
-    select(ocean,Major_Group_En,value)%>%
-    arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
-    pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
+    select(ocean,Major_Group,value)%>%
+    arrange(match(Major_Group, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
+    pivot_wider(names_from = Major_Group,values_from = value,values_fill = "0 [O%]")%>%
     ungroup()
 
   tab_name<-paste0("ref_",name,".csv")
@@ -1873,9 +1873,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #f_area
   unique_area<- data%>%
     filter(year %in% seq(period_end-9,period_end,1))%>%
-    select(f_area_type,f_area_label,Major_Group_En,species,capture)%>%
-    mutate(code=paste0(f_area_type,"_",f_area_label,"_",Major_Group_En))%>%
-    select(-f_area_type,-f_area_label,-Major_Group_En)%>%
+    select(f_area_type,f_area_label,Major_Group,species,capture)%>%
+    mutate(code=paste0(f_area_type,"_",f_area_label,"_",Major_Group))%>%
+    select(-f_area_type,-f_area_label,-Major_Group)%>%
     mutate(capture=1)%>%
     distinct()%>%
     pivot_wider(names_from = code,values_from = capture,values_fill = 0)%>%
@@ -1885,11 +1885,11 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     pivot_longer(!species, names_to = "code", values_to = "count")%>%
     group_by(code)%>%
     summarise(unique_nb=sum(count))%>%
-    separate(code, c("f_area_type","f_area_label", "Major_Group_En"), sep = "_")%>%
-    complete(nesting(f_area_type,f_area_label),Major_Group_En,fill=list(unique_nb=0))%>%
+    separate(code, c("f_area_type","f_area_label", "Major_Group"), sep = "_")%>%
+    complete(nesting(f_area_type,f_area_label),Major_Group,fill=list(unique_nb=0))%>%
     ungroup()%>%
-    inner_join(select(major_area_nb_sp,f_area_type,f_area_label,Major_Group_En,n))%>%
-    group_by(f_area_type,f_area_label,Major_Group_En)%>%
+    inner_join(select(major_area_nb_sp,f_area_type,f_area_label,Major_Group,n))%>%
+    group_by(f_area_type,f_area_label,Major_Group)%>%
     mutate(pourc=unique_nb/n*100)
 
   for(i in unique(unique_area$f_area_type)){
@@ -1899,9 +1899,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     unique_area_type <- unique_area %>%
       filter(f_area_type==i)%>%
       mutate(value=if(!is.nan(pourc)){paste0(unique_nb," [",round(pourc,2),"%]")}else{"_"})%>%
-      select(f_area_label,Major_Group_En,value)%>%
-      arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
-      pivot_wider(names_from = Major_Group_En,values_from = value,values_fill = "0 [O%]")%>%
+      select(f_area_label,Major_Group,value)%>%
+      arrange(match(Major_Group, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
+      pivot_wider(names_from = Major_Group,values_from = value,values_fill = "0 [O%]")%>%
       ungroup()
 
     print(unique_area_type)
@@ -1919,9 +1919,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
    richess_ocean<- data%>%
      filter(!is.na(ocean))%>%
-     select(ocean,Major_Group_En,flag,year,species,capture)%>%
-     mutate(code=paste0(ocean,"-",Major_Group_En))%>%
-     select(-ocean,-Major_Group_En)%>%
+     select(ocean,Major_Group,flag,year,species,capture)%>%
+     mutate(code=paste0(ocean,"-",Major_Group))%>%
+     select(-ocean,-Major_Group)%>%
      filter(year %in% seq(period_end-9,period_end,1))%>%
      mutate(capture=1)%>%
      distinct()%>%
@@ -1930,22 +1930,22 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
      pivot_wider(names_from = species,values_from = n,values_fill = 0)%>%
      group_by(code)%>%
      summarise(simpson=diversity(across(where(is.numeric)),index="simpson"))%>%
-     separate(code, c("ocean","Major_Group_En"), sep = "-")%>%
+     separate(code, c("ocean","Major_Group"), sep = "-")%>%
      ungroup()
 
    richess_ocean_table<-richess_ocean%>%
      group_by(ocean)%>%
-     arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
-     pivot_wider(names_from = Major_Group_En,values_from = simpson)
+     arrange(match(Major_Group, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
+     pivot_wider(names_from = Major_Group,values_from = simpson)
 
    tab_name<-paste0("ref_",name,".csv")
    write.csv(richess_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
 
 
-   richess_ocean$Major_Group_En<-factor(richess_ocean$Major_Group_En,
+   richess_ocean$Major_Group<-factor(richess_ocean$Major_Group,
                                        levels = c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))
 
-   fig<-ggplot(richess_ocean, aes(Major_Group_En, ocean, fill= simpson)) +
+   fig<-ggplot(richess_ocean, aes(Major_Group, ocean, fill= simpson)) +
      geom_tile(color = "white",lwd = 1.5,linetype = 1) +
      geom_text(aes(label = scales::comma(simpson,accuracy=0.01)), color = "white", size = 4)+
      scale_fill_gradient2(low="#caf0f8",mid="#48cae4",high="#023e8a",midpoint=0.5,limits=c(0,1))+
@@ -1972,9 +1972,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
    #major area
 
    richess_area<- data%>%
-     select(f_area_type,f_area,f_area_label,Major_Group_En,flag,year,species,capture)%>%
-     mutate(code=paste0(f_area_type,"_",f_area,"_",f_area_label,"_",Major_Group_En))%>%
-     select(-f_area_type,-f_area,-f_area_label,-Major_Group_En)%>%
+     select(f_area_type,f_area,f_area_label,Major_Group,flag,year,species,capture)%>%
+     mutate(code=paste0(f_area_type,"_",f_area,"_",f_area_label,"_",Major_Group))%>%
+     select(-f_area_type,-f_area,-f_area_label,-Major_Group)%>%
      filter(year %in% seq(period_end-9,period_end,1))%>%
      mutate(capture=1)%>%
      distinct()%>%
@@ -1983,10 +1983,10 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
      pivot_wider(names_from = species,values_from = n,values_fill = 0)%>%
      group_by(code)%>%
      summarise(simpson=diversity(across(where(is.numeric)),index="simpson"))%>%
-     separate(code, c("f_area_type","f_area","f_area_label","Major_Group_En"), sep = "_")%>%
+     separate(code, c("f_area_type","f_area","f_area_label","Major_Group"), sep = "_")%>%
      ungroup()
 
-   richess_area$Major_Group_En<-factor(richess_area$Major_Group_En,
+   richess_area$Major_Group<-factor(richess_area$Major_Group,
                                        levels = c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))
 
    for(i in unique(richess_area$f_area_type)){
@@ -1996,8 +1996,8 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
      richess_area_table<-richess_area%>%
        filter(f_area_type==i)%>%
        group_by(f_area_type,f_area,f_area_label)%>%
-       arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
-       pivot_wider(names_from = Major_Group_En,values_from = simpson)
+       arrange(match(Major_Group, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
+       pivot_wider(names_from = Major_Group,values_from = simpson)
 
       print(richess_area_table)
 
@@ -2007,7 +2007,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
      richess_area_type <- richess_area %>%
        filter(f_area_type==i)
 
-   fig<-ggplot(richess_area_type%>%filter(f_area!="07"), aes(Major_Group_En, f_area_label, fill= simpson)) +
+   fig<-ggplot(richess_area_type%>%filter(f_area!="07"), aes(Major_Group, f_area_label, fill= simpson)) +
      geom_tile(color = "white",lwd = 1.5,linetype = 1) +
      geom_text(aes(label = scales::comma(simpson,accuracy=0.01)), color = "white", size = 4)+
      scale_fill_gradient2(low="#caf0f8",mid="#48cae4",high="#023e8a",midpoint=0.5,limits=c(0,1))+
@@ -2041,16 +2041,16 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
    turn_ocean<- data %>%
      filter(!is.na(ocean))%>%
-     select(ocean,flag,Major_Group_En,year,species) %>%
+     select(ocean,flag,Major_Group,year,species) %>%
      filter(year %in% seq(period_end-9,period_end,1))%>%
      distinct()%>%
-     arrange(ocean,flag,Major_Group_En,year)%>%
-     group_by(ocean,flag,Major_Group_En,year)%>%
+     arrange(ocean,flag,Major_Group,year)%>%
+     group_by(ocean,flag,Major_Group,year)%>%
      summarise(list_sp = paste0(unique(species),collapse = ","))%>%
-     group_by(ocean,flag,Major_Group_En)%>%
+     group_by(ocean,flag,Major_Group)%>%
      mutate(previous_year = lag(list_sp, order_by = year))%>%
      filter(year!=2010)%>%
-     group_by(ocean,flag,Major_Group_En,year)%>%
+     group_by(ocean,flag,Major_Group,year)%>%
      mutate(previous_year = if(!is.na(previous_year)){previous_year}else{"_"})%>%
      mutate(nb_diff={
        x=sort(unlist(strsplit(list_sp,",")))==sort(unlist(strsplit(previous_year,",")))
@@ -2058,15 +2058,15 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
        x=sort(unlist(strsplit(list_sp,",")))==sort(unlist(strsplit(previous_year,",")))
        length(x[x==TRUE])})%>%
      mutate(turnover=(nb_diff/(nb_diff+nb_egal))*100)%>%
-     group_by(ocean,flag,Major_Group_En)%>%
+     group_by(ocean,flag,Major_Group)%>%
     summarise(meanOfYear=mean(turnover))%>%
-     group_by(ocean,Major_Group_En)%>%
+     group_by(ocean,Major_Group)%>%
      summarise(meanOfFlag=mean(meanOfYear))%>%
      ungroup()
 
    turn_ocean_table<-turn_ocean%>%
-     arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
-     pivot_wider(names_from = Major_Group_En,values_from = meanOfFlag)
+     arrange(match(Major_Group, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
+     pivot_wider(names_from = Major_Group,values_from = meanOfFlag)
 
    tab_name<-paste0("ref_",name,".csv")
    write.csv(turn_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
@@ -2074,16 +2074,16 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
    #fao area
 
    turn_area<- data %>%
-     select(f_area_type,f_area_label,flag,Major_Group_En,year,species) %>%
+     select(f_area_type,f_area_label,flag,Major_Group,year,species) %>%
      filter(year %in% seq(period_end-9,period_end,1))%>%
      distinct()%>%
-     arrange(f_area_type,f_area_label,flag,Major_Group_En,year)%>%
-     group_by(f_area_type,f_area_label,flag,Major_Group_En,year)%>%
+     arrange(f_area_type,f_area_label,flag,Major_Group,year)%>%
+     group_by(f_area_type,f_area_label,flag,Major_Group,year)%>%
      summarise(list_sp = paste0(unique(species),collapse = ","))%>%
-     group_by(f_area_type,f_area_label,flag,Major_Group_En)%>%
+     group_by(f_area_type,f_area_label,flag,Major_Group)%>%
      mutate(previous_year = lag(list_sp, order_by = year))%>%
      filter(year!=2010)%>%
-     group_by(f_area_type,f_area_label,flag,Major_Group_En,year)%>%
+     group_by(f_area_type,f_area_label,flag,Major_Group,year)%>%
      mutate(previous_year = if(!is.na(previous_year)){previous_year}else{"_"})%>%
      mutate(nb_diff={
        x=sort(unlist(strsplit(list_sp,",")))==sort(unlist(strsplit(previous_year,",")))
@@ -2091,9 +2091,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
          x=sort(unlist(strsplit(list_sp,",")))==sort(unlist(strsplit(previous_year,",")))
          length(x[x==TRUE])})%>%
      mutate(turnover=(nb_diff/(nb_diff+nb_egal))*100)%>%
-     group_by(f_area_type,f_area_label,flag,Major_Group_En)%>%
+     group_by(f_area_type,f_area_label,flag,Major_Group)%>%
      summarise(meanOfYear=mean(turnover))%>%
-     group_by(f_area_type,f_area_label,Major_Group_En)%>%
+     group_by(f_area_type,f_area_label,Major_Group)%>%
      summarise(meanOfFlag=mean(meanOfYear))%>%
      ungroup()
 
@@ -2104,8 +2104,8 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
      turn_area_table<-turn_area%>%
        filter(f_area_type==i)%>%
        group_by(f_area_type,f_area_label)%>%
-     arrange(match(Major_Group_En, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
-     pivot_wider(names_from = Major_Group_En,values_from = meanOfFlag)
+     arrange(match(Major_Group, c("Fishes", "Molluscs", "Crustaceans", "Aquatic Invertebrates","Aquatic Plants"))) %>%
+     pivot_wider(names_from = Major_Group,values_from = meanOfFlag)
 
      print(turn_area_table)
 
