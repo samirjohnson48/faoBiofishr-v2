@@ -8,7 +8,10 @@
 
 data_formatting = function(file){
 
-#Inport dataset
+# Import dataset
+# File is Fishstat global capture production downloaded from 
+# https://www.fao.org/fishery/en/collection/capture
+# (CSV raw data)
 fao<-read.csv(file)
 
 #Convert wide table to long table
