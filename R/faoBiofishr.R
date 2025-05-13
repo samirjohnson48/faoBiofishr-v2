@@ -16,6 +16,7 @@
 #' @import knitr
 #' @import shinyWidgets
 #' @import shinydashboard
+#' @import fishstat
 #'
 #' @title  Report compiler to biodiversity trent report of fisheries production
 #' @description  Report compiler to biodiversity trent report of fisheries production
@@ -24,8 +25,8 @@
 #'  \tabular{ll}{
 #'    Package: \tab faoBiofishr\cr
 #'    Type: \tab Package\cr
-#'    Version: \tab 0.0.1\cr
-#'    Date: \tab 2021-10-01\cr
+#'    Version: \tab 0.0.2\cr
+#'    Date: \tab 2025-05-13\cr
 #'    LazyLoad: \tab yes\cr
 #'  }
 #'

@@ -31,7 +31,7 @@ report_content<-function(file,out=NULL){
   dir.create(report_path,showWarnings = F)
 
   data<-data_formatting(file)
-  write.csv(data,file.path(tab_path,"structured_dataset.csv"),row.names = FALSE,quote=FALSE)
+  write.table(data,file.path(tab_path,"structured_dataset.csv"),row.names = FALSE,quote=FALSE,sep="\t")
 
   #Graphical rules
   ## ISSCAAP Group colors
@@ -161,7 +161,7 @@ report_content<-function(file,out=NULL){
     summarise(flag = paste0(flag,collapse = ";"))
 
   tab_name<-"flag_list_by_start_year.csv"
-  write.csv(start_date_country,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+  write.table(start_date_country,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
 area_in_ocean<-data %>%
   filter(!is.na(ocean))%>%
@@ -173,7 +173,7 @@ area_in_ocean<-data %>%
   summarise(area = paste0(f_area_label,collapse = ";"))
 
 tab_name<-"area_list_by_ocean.csv"
-write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+write.table(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
   # Part 1
 
@@ -208,7 +208,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     save_kable(file = file.path(fig_path,sprintf("table_global_%s_%s.png",period_start,period_end)), bs_theme = "flatly")
 
   data %>%
-    filter(year%in%seq(period_end-2,period_end))%>%
+    filter(year %in% seq(period_end-2,period_end))%>%
     select(c("Major_Group","capture")) %>%
     count(Major_Group) %>%
     mutate(sum = sum(n)) %>%
@@ -301,12 +301,12 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #### Table
 
   tab_name<-paste0("ref_",name,".csv")
-  write.csv(com_global%>%
+  write.table(com_global%>%
             select(Major_Group,n,pour)%>%
             rename(ISSCAAP_Group = Major_Group)%>%
             rename(Number_thousand = n)%>%
             rename(Pourcentage = pour)
-              ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+              ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
   content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -353,7 +353,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #### Table
 
   tab_name<-paste0("ref_",name,".csv")
-  write.csv(com_global_f_area,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+  write.table(com_global_f_area,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
 
 ###################
@@ -488,12 +488,12 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   tab_name<-paste0("ref_",name,".csv")
 
-  write.csv(com_area_type%>%
+  write.table(com_area_type%>%
               select(Major_Group,f_area_type,n)%>%
               rename(ISSCAAP_Group = Major_Group)%>%
               rename(Number_thousand = n)%>%
               rename(FAO_Area_Type = f_area_type)
-            ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+            ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
   content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -665,9 +665,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   tab_name<-paste0("ref_",name,".csv")
 
-  write.csv(com_ocean_group%>%
+  write.table(com_ocean_group%>%
               select(Major_Group,ocean,meanOfYear)
-            ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+            ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
   content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -676,7 +676,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
   tab_name<-paste0("ref_",name,"_subgroup",".csv")
 
-  write.csv(com_ocean_group_isscaap2,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+  write.table(com_ocean_group_isscaap2,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
   content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -756,7 +756,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   #
   #     tab_name<-paste0("ref_",name,".csv")
   #
-  #     write.csv(com_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+  #     write.table(com_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
   #
   #     content$tab[name]<-list(file.path(tab_path,tab_name))
   #
@@ -799,7 +799,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
        #INLAND TABLE
        tab_name<-paste0("ref_",name,".csv")
-       write.csv(com_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+       write.table(com_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
       #ISSCAAP
 
@@ -864,7 +864,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
        #INLAND TABLE SUBGROUP
        tab_name<-paste0("ref_",name,"_subgroup",".csv")
 
-       write.csv(com_area_type2,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+       write.table(com_area_type2,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
        content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -908,7 +908,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
       #MARINE TABLE
       tab_name<-paste0("ref_",name,".csv")
-      write.csv(com_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+      write.table(com_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
       com_area_type2 <- com_area_group2 %>%
         filter(f_area_type=="marine")
@@ -952,7 +952,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
       #MARINE TABLE SUBGROUP
       tab_name<-paste0("ref_",name,"_subgroup",".csv")
-      write.csv(com_area_type2,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+      write.table(com_area_type2,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
 
       ###############################################################################################################################
@@ -1060,9 +1060,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
       tab_name<-paste0("ref_",name,".csv")
 
-      write.csv(com_sp_lvl%>%
+      write.table(com_sp_lvl%>%
                   rename(Pourcentage = pour)
-                ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+                ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
       content$tab[name]<-list(file.path(tab_path,tab_name))
 
       #### Text
@@ -1157,9 +1157,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
       tab_name<-paste0("ref_",name,".csv")
 
-      write.csv(com_sp_ocean%>%
+      write.table(com_sp_ocean%>%
                   rename(Pourcentage = pour)
-                ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+                ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
       content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -1241,9 +1241,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
         tab_name<-paste0("ref_",name,".csv")
 
-        write.csv(com_sp_area_type%>%
+        write.table(com_sp_area_type%>%
                     rename(Pourcentage = pour)
-                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
         #marine
 
@@ -1318,9 +1318,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
         tab_name<-paste0("ref_",name,".csv")
 
-        write.csv(com_sp_area_type%>%
+        write.table(com_sp_area_type%>%
                     rename(Pourcentage = pour)
-                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
         content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -1419,9 +1419,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
         tab_name<-paste0("ref_",name,".csv")
 
-        write.csv(com_sp_lvl%>%
+        write.table(com_sp_lvl%>%
                     rename(Pourcentage = pour)
-                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
         content$tab[name]<-list(file.path(tab_path,tab_name))
 
         #### Text
@@ -1497,9 +1497,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
         tab_name<-paste0("ref_",name,".csv")
 
-        write.csv(com_sp_ocean%>%
+        write.table(com_sp_ocean%>%
                     rename(Pourcentage = pour)
-                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
         content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -1581,9 +1581,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
         tab_name<-paste0("ref_",name,".csv")
 
-        write.csv(com_sp_area_type%>%
+        write.table(com_sp_area_type%>%
                     rename(Pourcentage = pour)
-                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
         #marine
 
@@ -1658,9 +1658,9 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
         tab_name<-paste0("ref_",name,".csv")
 
-        write.csv(com_sp_area_type%>%
+        write.table(com_sp_area_type%>%
                     rename(Pourcentage = pour)
-                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+                  ,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
         content$tab[name]<-list(file.path(tab_path,tab_name))
 
@@ -1726,7 +1726,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
 
 
   tab_name<-paste0("ref_",name,".csv")
-  write.csv(ocean_nb_sp_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+  write.table(ocean_nb_sp_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
   #fao major area
   major_area_nb_sp<- data %>%
@@ -1753,7 +1753,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
   print(area_type_nb_sp)
   name<-paste0("taxa_richess_",i)
   tab_name<-paste0("ref_",name,".csv")
-  write.csv(area_type_nb_sp,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+  write.table(area_type_nb_sp,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
   }
 
   #b
@@ -1792,7 +1792,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     ungroup()
 
   tab_name<-paste0("ref_",name,".csv")
-  write.csv(multi_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+  write.table(multi_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
 
   multi_area<- data%>%
@@ -1829,7 +1829,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     print(multi_area_type)
 
     tab_name<-paste0("ref_",name,".csv")
-    write.csv(multi_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+    write.table(multi_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
   }
 
   #c
@@ -1868,7 +1868,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     ungroup()
 
   tab_name<-paste0("ref_",name,".csv")
-  write.csv(unique_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+  write.table(unique_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
   #f_area
   unique_area<- data%>%
@@ -1907,7 +1907,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
     print(unique_area_type)
 
     tab_name<-paste0("ref_",name,".csv")
-    write.csv(unique_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+    write.table(unique_area_type,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
   }
 
   ##
@@ -1939,7 +1939,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
      pivot_wider(names_from = Major_Group,values_from = simpson)
 
    tab_name<-paste0("ref_",name,".csv")
-   write.csv(richess_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+   write.table(richess_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
 
    richess_ocean$Major_Group<-factor(richess_ocean$Major_Group,
@@ -2002,7 +2002,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
       print(richess_area_table)
 
       tab_name<-paste0("ref_",name,".csv")
-      write.csv(richess_area_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+      write.table(richess_area_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
      richess_area_type <- richess_area %>%
        filter(f_area_type==i)
@@ -2069,7 +2069,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
      pivot_wider(names_from = Major_Group,values_from = meanOfFlag)
 
    tab_name<-paste0("ref_",name,".csv")
-   write.csv(turn_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+   write.table(turn_ocean_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
 
    #fao area
 
@@ -2110,7 +2110,7 @@ write.csv(area_in_ocean,file.path(tab_path,tab_name),row.names = FALSE,quote=FAL
      print(turn_area_table)
 
      tab_name<-paste0("ref_",name,".csv")
-     write.csv(turn_area_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE)
+     write.table(turn_area_table,file.path(tab_path,tab_name),row.names = FALSE,quote=FALSE,sep="\t")
    }
 
 

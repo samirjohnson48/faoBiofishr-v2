@@ -7,32 +7,22 @@
 #' @export
 
 data_formatting = function(file){
+# Import data from Fishstat library
+# Use table 'capture' which gives global capture production
+fao_n <- capture %>%
+  rename(flag = country,
+         f_area = area,
+         capture = value,
+         unit = measure,
+         info = status) %>%
+  select(c("flag","species","f_area","unit", "year","capture","info"))
 
-# Import dataset
-# File is Fishstat global capture production downloaded from 
-# https://www.fao.org/fishery/en/collection/capture
-# (CSV raw data)
-fao<-read.csv(file)
-
-#Convert wide table to long table
-fao_v <- fao[,!sapply(colnames(fao), startsWith, "S")]
-colnames(fao_v)[1:4] <- c("flag", "species", "f_area", "unit")
-tmp<-colnames(fao_v)
-fao_v <- melt(fao_v, id=c("flag", "species", "f_area", "unit"),value.name="capture",variable.name = "year")
-fao_v$year <- gsub('\\D','',fao_v$year)
-fao_s <- fao[,!sapply(colnames(fao), startsWith, "X")]
-colnames(fao_s)<- tmp
-fao_s <- melt(fao_s, id=c("flag", "species", "f_area", "unit"),value.name="info",variable.name = "year")
-fao_s$year <- gsub('\\D','',fao_s$year)
-fao_n <- merge(fao_v,fao_s)
+fao_n <- fao_n[!is.na(fao_n$year),]
 fao_n <- fao_n[!is.na(fao_n$flag),]
 fao_n <- fao_n[fao_n$flag!="",]
 fao_n <- fao_n[!is.na(fao_n$species),]
 fao_n <- fao_n[fao_n$species!="",]
 
-fao_n<-fao_n[,-4]
-
-names(fao_n)<-c("flag","species","f_area","year","capture","info")
 
 #Be sure to keep 2 character length format to area code
 fao_n$f_area<-sprintf("%02d", as.numeric(fao_n$f_area))
@@ -42,7 +32,6 @@ fao_n$flag<-sprintf("%03d", as.numeric(fao_n$flag))
 
 #Keep information about inland/marine area base on
 fao_n$f_area_type <- ifelse(fao_n$f_area%in%c("01","02","03","04","05","06","07"),"inland","marine")
-
 
 #ISSCAAP Group register
 gr<-readr::read_csv("https://raw.githubusercontent.com/openfigis/RefData/gh-pages/species/CL_FI_SPECIES_GROUPS.csv")
