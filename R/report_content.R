@@ -7,7 +7,7 @@
 #' @return A list of element
 #' @export
 
-report_content<-function(file,out=NULL){
+report_content<-function(out=NULL){
 
   #Data cleaning
   content<-list()

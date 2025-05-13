@@ -6,7 +6,7 @@
 #' @return A csv
 #' @export
 
-data_formatting = function(file){
+data_formatting = function(){
 # Import data from Fishstat library
 # Use table 'capture' which gives global capture production
 fao_n <- capture %>%
